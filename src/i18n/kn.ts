@@ -185,4 +185,6 @@ export const kn: Partial<Record<EnKeys, string>> = {
   donationsReceived: 'ದೇಣಿಗೆಗಳು',
   collectedBy: 'ಸಂಗ್ರಹಿಸಿದವರು',
   receiptPdf: 'ರಸೀದಿ (PDF)',
+  today: 'ಇಂದು',
+  tomorrow: 'ನಾಳೆ',
 };

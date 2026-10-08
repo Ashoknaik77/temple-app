@@ -25,6 +25,29 @@ export function AdminBookingsScreen() {
   const [mode, setMode] = useState<'day' | 'week'>('day');
   const [refresh, setRefresh] = useState(0);
 
+  // Quick-jump day chips: today + next 6 days (ease of use for "is there a booking tomorrow/Friday?")
+  const dayChips = useMemo(() => {
+    const locale = lang === 'kn' ? 'kn-IN' : 'en-IN';
+    const chips: { date: string; label: string; sub: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(now);
+      d.setDate(now.getDate() + i);
+      chips.push({
+        date: toISODate(d),
+        label:
+          i === 0
+            ? t('today')
+            : i === 1
+              ? t('tomorrow')
+              : d.toLocaleDateString(locale, { weekday: 'long' }),
+        sub: d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+      });
+    }
+    return chips;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   const groups = useMemo(() => {
     if (mode === 'day') {
       const list = allBookings().filter((b) => b.date === date);
@@ -85,6 +108,33 @@ export function AdminBookingsScreen() {
         <label className="mt-3 block text-sm font-bold text-stone-800" htmlFor="adm-bk-date">
           {mode === 'day' ? t('selectDate') : t('weekOf')}
         </label>
+        {mode === 'day' && (
+          <div
+            className="mt-2 flex gap-2 overflow-x-auto pb-1"
+            role="group"
+            aria-label={t('selectDate')}
+          >
+            {dayChips.map((c) => {
+              const active = c.date === date;
+              return (
+                <button
+                  key={c.date}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setDate(c.date)}
+                  className={`min-h-[56px] min-w-[76px] shrink-0 rounded-2xl px-3 py-2 text-center shadow-sm ${
+                    active ? 'bg-maroon-800 text-amber-100' : 'bg-white text-stone-800'
+                  }`}
+                >
+                  <div className="text-xs font-bold">{c.label}</div>
+                  <div className={`text-sm font-extrabold ${active ? '' : 'text-stone-500'}`}>
+                    {c.sub}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <input
           id="adm-bk-date"
           type="date"
