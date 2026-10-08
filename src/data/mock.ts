@@ -13,7 +13,7 @@ import type {
 } from '../types';
 
 export const templeProfile: TempleProfile = {
-  name: { en: 'Shri Durga Parameshwari Temple', kn: 'ಶ್ರೀ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಸ್ಥಾನ' },
+  name: { en: 'Sri Durga Parameshwari Temple', kn: 'ಶ್ರೀ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಸ್ಥಾನ' },
   tagline: {
     en: 'Sri Durga Parameshwari Temple located in Koruvail (Koruvale), Kudlu, Kasaragod',
     kn: 'ಕಾಸರಗೋಡು, ಕುಡ್ಲು, ಕೊರುವೈಲ್ (ಕೊರುವಲೆ)ನಲ್ಲಿರುವ ಶ್ರೀ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಸ್ಥಾನ',
@@ -22,14 +22,14 @@ export const templeProfile: TempleProfile = {
   coverUrl: '',
   galleryUrls: [],
   about: {
-    en: 'An ancient temple of Goddess Durga Parameshwari on the banks of the Nandini river, known for the sacred Naga Bana and centuries of devotion.',
-    kn: 'ನಂದಿನಿ ನದಿಯ ದಡದಲ್ಲಿರುವ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಿಯ ಪುರಾತನ ದೇವಸ್ಥಾನ. ಪವಿತ್ರ ನಾಗ ಬನ ಮತ್ತು ಶತಮಾನಗಳ ಭಕ್ತಿಗೆ ಹೆಸರುವಾಸಿ.',
+    en: 'A sacred abode of Goddess Durga Parameshwari at Koruvail (Koruvale), Kudlu in Kasaragod district, Kerala — a place of deep devotion and centuries of tradition.',
+    kn: 'ಕೇರಳದ ಕಾಸರಗೋಡು ಜಿಲ್ಲೆಯ ಕುಡ್ಲುವಿನ ಕೊರುವೈಲ್ (ಕೊರುವಲೆ)ನಲ್ಲಿರುವ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಿಯ ಪವಿತ್ರ ಸನ್ನಿಧಿ — ಆಳವಾದ ಭಕ್ತಿ ಮತ್ತು ಶತಮಾನಗಳ ಸಂಪ್ರದಾಯದ ಸ್ಥಳ.',
   },
-  address: 'Kateel, Dakshina Kannada, Karnataka 574148',
-  mapsUrl: 'https://maps.google.com/?q=Kateel+Durga+Parameshwari+Temple',
+  address: 'Koruvail (Koruvale), Kudlu, Kasaragod, Kerala',
+  mapsUrl: 'https://maps.google.com/?q=Sri+Durga+Parameshwari+Temple+Koruvail+Kudlu+Kasaragod',
   phone: '+91 98765 43210',
   whatsapp: '+91 98765 43210',
-  email: 'info@kateeltemple.example',
+  email: 'info@sridurgaparameshwari.example',
   socials: {},
   timings: {
     morning: '5:30 AM – 12:30 PM',
@@ -146,7 +146,7 @@ export const events: TempleEvent[] = [
 export const myBookings: Booking[] = [
   {
     id: 'b1',
-    bookingCode: 'KTL-20261008-001',
+    bookingCode: 'SDP-20261008-001',
     sevaId: 'archana',
     sevaName: { en: 'Archana / Kumkuma Archana', kn: 'ಅರ್ಚನೆ / ಕುಂಕುಮ ಅರ್ಚನೆ' },
     date: '2026-10-08',
@@ -170,7 +170,7 @@ export const myDonations: Donation[] = [
     purpose: 'Annadaan',
     anonymous: false,
     mode: 'online',
-    receiptNo: 'KTL-D-2026-0001',
+    receiptNo: 'SDP-D-2026-0001',
     createdAt: '2026-09-15',
   },
 ];
