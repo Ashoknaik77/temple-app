@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLang } from '../../i18n';
-import { collectionReport, monthRange, weekRange } from '../../data/mock';
+import { collectionReport, getTempleProfile, monthRange, weekRange } from '../../data/mock';
+import { downloadReportPdf } from '../../lib/reportPdf';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { fmtDate, toISODate, useLocalText } from '../../components/text';
 
@@ -24,6 +25,18 @@ export function AdminReportsScreen() {
   const inputCls =
     'mt-1 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base focus:border-amber-600 focus:outline-none';
   const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+
+  function onDownloadPdf() {
+    const profile = getTempleProfile();
+    downloadReportPdf(report, {
+      templeName: profile.name.en,
+      templeAddress: profile.address,
+      templePhone: profile.phone,
+      periodLabel: t(period === 'day' ? 'dayView' : period === 'week' ? 'weekView' : 'monthView'),
+      dateRange:
+        from === to ? fmtDate(from, lang) : `${fmtDate(from, lang)} – ${fmtDate(to, lang)}`,
+    });
+  }
 
   return (
     <div className="pb-24">
@@ -62,6 +75,13 @@ export function AdminReportsScreen() {
         <p className="mt-2 text-sm font-semibold text-stone-500">
           {from === to ? fmtDate(from, lang) : `${fmtDate(from, lang)} – ${fmtDate(to, lang)}`}
         </p>
+        <button
+          type="button"
+          onClick={onDownloadPdf}
+          className="mt-3 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-maroon-800 text-base font-extrabold text-amber-100 shadow"
+        >
+          <span aria-hidden>📄</span> {t('downloadPdf')}
+        </button>
 
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-emerald-700 p-4 text-white">

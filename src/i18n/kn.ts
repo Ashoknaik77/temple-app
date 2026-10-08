@@ -187,4 +187,11 @@ export const kn: Partial<Record<EnKeys, string>> = {
   receiptPdf: 'ರಸೀದಿ (PDF)',
   today: 'ಇಂದು',
   tomorrow: 'ನಾಳೆ',
+  noEvents: 'ಪ್ರಸ್ತುತ ಯಾವುದೇ ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳಿಲ್ಲ. ದಯವಿಟ್ಟು ನಂತರ ಪರಿಶೀಲಿಸಿ.',
+  morningTimings: 'ಬೆಳಿಗ್ಗೆ',
+  eveningTimings: 'ಸಂಜೆ',
+  fridaySpecial: 'ಶುಕ್ರವಾರ ವಿಶೇಷ',
+  noTimings: 'ಸಮಯವನ್ನು ಇನ್ನೂ ಸೇರಿಸಲಾಗಿಲ್ಲ.',
+  timingsNote: 'ಹಬ್ಬದ ದಿನಗಳಲ್ಲಿ ಸಮಯ ಬದಲಾಗಬಹುದು. ದೃಢೀಕರಿಸಲು ದೇವಸ್ಥಾನದ ಕಛೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.',
+  downloadPdf: 'PDF ಡೌನ್‌ಲೋಡ್',
 };

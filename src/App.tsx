@@ -22,6 +22,8 @@ import { AdminEventFormScreen } from './screens/admin/AdminEventFormScreen';
 import { AdminBookingsScreen } from './screens/admin/AdminBookingsScreen';
 import { AdminBookingFormScreen } from './screens/admin/AdminBookingFormScreen';
 import { AdminDonationsScreen } from './screens/admin/AdminDonationsScreen';
+import { EventsScreen } from './screens/EventsScreen';
+import { TimingsScreen } from './screens/TimingsScreen';
 import { AdminAnnouncementsScreen } from './screens/admin/AdminAnnouncementsScreen';
 import { AdminUsersScreen } from './screens/admin/AdminUsersScreen';
 import { AdminReportsScreen } from './screens/admin/AdminReportsScreen';
@@ -69,8 +71,8 @@ export default function App() {
             <Route path="/donate" element={<DonateScreen />} />
             <Route path="/donations" element={<DonationHistoryScreen />} />
             <Route path="/donations/:receiptNo" element={<DonationReceiptScreen />} />
-            <Route path="/events" element={<PlaceholderScreen titleKey="upcomingEvents" />} />
-            <Route path="/timings" element={<PlaceholderScreen titleKey="dailyTimings" />} />
+            <Route path="/events" element={<EventsScreen />} />
+            <Route path="/timings" element={<TimingsScreen />} />
             <Route path="/contact" element={<PlaceholderScreen titleKey="contactTemple" />} />
             <Route path="/darshan" element={<PlaceholderScreen titleKey="liveDarshan" />} />
             <Route path="/gallery" element={<PlaceholderScreen titleKey="gallery" />} />

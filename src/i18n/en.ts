@@ -185,6 +185,13 @@ export const en = {
   receiptPdf: 'Receipt (PDF)',
   today: 'Today',
   tomorrow: 'Tomorrow',
+  noEvents: 'No upcoming events right now. Please check back soon.',
+  morningTimings: 'Morning',
+  eveningTimings: 'Evening',
+  fridaySpecial: 'Friday special',
+  noTimings: 'Timings have not been added yet.',
+  timingsNote: 'Timings may change on festival days. Contact the temple office to confirm.',
+  downloadPdf: 'Download PDF',
 } as const;
 
 export type EnKeys = keyof typeof en;
