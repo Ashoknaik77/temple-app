@@ -111,6 +111,12 @@ export const en = {
   forPurpose: 'for',
   thankYouDonation: 'Thank you for your generous donation!',
   offlineDonationNote: 'This donation was recorded at the temple.',
+  seatsLeft: 'seats left',
+  bookNow: 'Book Now',
+  selectSlot: 'Select a time slot',
+  bookingSummary: 'Booking summary',
+  invalidPhone: 'Please enter a valid 10-digit phone number.',
+  nameRequired: 'Please enter your name.',
 } as const;
 
 export type EnKeys = keyof typeof en;

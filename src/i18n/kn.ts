@@ -113,4 +113,10 @@ export const kn: Partial<Record<EnKeys, string>> = {
   forPurpose: 'ಉದ್ದೇಶ',
   thankYouDonation: 'ನಿಮ್ಮ ಉದಾರ ದಾನಕ್ಕೆ ಧನ್ಯವಾದಗಳು!',
   offlineDonationNote: 'ಈ ದಾನವನ್ನು ದೇವಸ್ಥಾನದಲ್ಲಿ ದಾಖಲಿಸಲಾಗಿದೆ.',
+  seatsLeft: 'ಸ್ಥಾನಗಳು ಉಳಿದಿವೆ',
+  bookNow: 'ಈಗ ಬುಕ್ ಮಾಡಿ',
+  selectSlot: 'ಸಮಯ ಆಯ್ಕೆಮಾಡಿ',
+  bookingSummary: 'ಬುಕಿಂಗ್ ಸಾರಾಂಶ',
+  invalidPhone: 'ದಯವಿಟ್ಟು ಸರಿಯಾದ 10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ.',
+  nameRequired: 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ.',
 };

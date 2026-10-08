@@ -182,3 +182,111 @@ export function nextMajorEvent(fromDate: string): TempleEvent | null {
     .sort((a, b) => (a.date < b.date ? -1 : 1));
   return upcoming[0] ?? null;
 }
+
+/* ---------------- Booking engine (mock layer) ---------------- */
+
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+const LOCAL_BOOKINGS_KEY = 'temple-bookings-v1';
+
+export function loadLocalBookings(): Booking[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_BOOKINGS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? (arr as Booking[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistLocalBookings(list: Booking[]): void {
+  localStorage.setItem(LOCAL_BOOKINGS_KEY, JSON.stringify(list));
+}
+
+/** All bookings: sample data + devotee's own (persisted locally). */
+export function allBookings(): Booking[] {
+  return [...myBookings, ...loadLocalBookings()].sort((a, b) =>
+    a.date === b.date ? (a.time < b.time ? -1 : 1) : a.date < b.date ? -1 : 1,
+  );
+}
+
+/** Deterministic demo availability for a slot, plus the devotee's own bookings. */
+export function getSlotBooked(sevaId: string, date: string, time: string): number {
+  const seva = sevas.find((s) => s.id === sevaId);
+  if (!seva) return 0;
+  const demo = hashStr(`${sevaId}|${date}|${time}`) % Math.max(1, Math.ceil(seva.capacity / 2));
+  const mine = loadLocalBookings().filter(
+    (b) => b.sevaId === sevaId && b.date === date && b.time === time && b.status === 'confirmed',
+  ).length;
+  return Math.min(seva.capacity, demo + mine);
+}
+
+export function seatsLeft(sevaId: string, date: string, time: string): number {
+  const seva = sevas.find((s) => s.id === sevaId);
+  if (!seva) return 0;
+  return Math.max(0, seva.capacity - getSlotBooked(sevaId, date, time));
+}
+
+export interface NewBookingInput {
+  sevaId: string;
+  date: string;
+  time: string;
+  devoteeName: string;
+  phone: string;
+  gotra?: string;
+  people: number;
+  sankalpa?: string;
+  payMode: 'online' | 'payAtTemple';
+}
+
+export function createBooking(input: NewBookingInput): Booking {
+  const seva = sevas.find((s) => s.id === input.sevaId);
+  if (!seva) throw new Error(`unknown seva ${input.sevaId}`);
+  if (seatsLeft(input.sevaId, input.date, input.time) < 1) {
+    throw new Error('slot full');
+  }
+  const seq = String(loadLocalBookings().length + 1).padStart(3, '0');
+  const booking: Booking = {
+    id: `b-local-${Date.now()}`,
+    bookingCode: `SDP-${input.date.replace(/-/g, '')}-${seq}`,
+    sevaId: input.sevaId,
+    sevaName: seva.name,
+    date: input.date,
+    time: input.time,
+    devoteeName: input.devoteeName.trim(),
+    phone: input.phone.replace(/\D/g, '').slice(-10),
+    gotra: input.gotra?.trim() || undefined,
+    people: input.people,
+    sankalpa: input.sankalpa?.trim() || undefined,
+    payMode: input.payMode,
+    status: 'confirmed',
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+  const list = loadLocalBookings();
+  list.push(booking);
+  persistLocalBookings(list);
+  return booking;
+}
+
+export function cancelBooking(id: string): boolean {
+  const sample = myBookings.find((b) => b.id === id);
+  if (sample) {
+    sample.status = 'cancelled';
+    return true;
+  }
+  const list = loadLocalBookings();
+  const ix = list.findIndex((b) => b.id === id);
+  if (ix < 0) return false;
+  list[ix] = { ...list[ix], status: 'cancelled' };
+  persistLocalBookings(list);
+  return true;
+}
+
+export function findBookingByCode(code: string): Booking | null {
+  return allBookings().find((b) => b.bookingCode === code) ?? null;
+}
