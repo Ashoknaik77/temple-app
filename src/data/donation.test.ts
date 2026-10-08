@@ -92,3 +92,22 @@ describe('allDonations', () => {
     expect(all[0].createdAt >= all[all.length - 1].createdAt).toBe(true);
   });
 });
+
+describe('receipt number uniqueness (regression)', () => {
+  it('increments past the sample receipt for the same year', () => {
+    const year = new Date().getFullYear();
+    const d = createDonation({
+      devoteeName: 'X',
+      phone: '9876543210',
+      amount: 100,
+      purpose: 'General',
+      anonymous: false,
+      mode: 'online',
+    });
+    // sample receipt is SDP-D-2026-0001; next must not collide
+    const codes = [d.receiptNo];
+    expect(new Set(codes).size).toBe(codes.length);
+    expect(d.receiptNo.startsWith(`SDP-D-${year}-`)).toBe(true);
+    expect(d.receiptNo).not.toBe('SDP-D-2026-0001');
+  });
+});

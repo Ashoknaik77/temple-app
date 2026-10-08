@@ -104,3 +104,33 @@ describe('cancelBooking', () => {
     expect(cancelBooking('missing')).toBe(false);
   });
 });
+
+describe('booking code uniqueness (regression)', () => {
+  it('increments past the sample booking code on the same date', () => {
+    const b = createBooking({
+      sevaId: 'archana',
+      date: '2026-10-08', // same date as sample booking SDP-20261008-001
+      time: '06:00',
+      devoteeName: 'Unique Code',
+      phone: '9876543210',
+      people: 1,
+      payMode: 'payAtTemple',
+    });
+    expect(b.bookingCode).toBe('SDP-20261008-002');
+  });
+
+  it('keeps incrementing for multiple bookings on one date', () => {
+    const mk = (time: string) =>
+      createBooking({
+        sevaId: 'archana',
+        date: '2026-10-09',
+        time,
+        devoteeName: 'X',
+        phone: '9876543210',
+        people: 1,
+        payMode: 'online',
+      });
+    expect(mk('06:00').bookingCode).toBe('SDP-20261009-001');
+    expect(mk('08:00').bookingCode).toBe('SDP-20261009-002');
+  });
+});

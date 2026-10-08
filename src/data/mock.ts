@@ -250,10 +250,16 @@ export function createBooking(input: NewBookingInput): Booking {
   if (seatsLeft(input.sevaId, input.date, input.time) < 1) {
     throw new Error('slot full');
   }
-  const seq = String(loadLocalBookings().length + 1).padStart(3, '0');
+  const codePrefix = `SDP-${input.date.replace(/-/g, '')}`;
+  const maxSeq = allBookings()
+    .filter((b) => b.bookingCode.startsWith(codePrefix))
+    .map((b) => parseInt(b.bookingCode.slice(-3), 10))
+    .filter((n) => Number.isFinite(n))
+    .reduce((m, n) => Math.max(m, n), 0);
+  const seq = String(maxSeq + 1).padStart(3, '0');
   const booking: Booking = {
     id: `b-local-${Date.now()}`,
-    bookingCode: `SDP-${input.date.replace(/-/g, '')}-${seq}`,
+    bookingCode: `${codePrefix}-${seq}`,
     sevaId: input.sevaId,
     sevaName: seva.name,
     date: input.date,
@@ -333,7 +339,13 @@ export function createDonation(input: NewDonationInput): Donation {
     throw new Error('invalid amount');
   }
   const year = new Date().getFullYear();
-  const seq = String(loadLocalDonations().length + 1).padStart(4, '0');
+  const receiptPrefix = `SDP-D-${year}`;
+  const maxSeq = allDonations()
+    .filter((d) => d.receiptNo.startsWith(receiptPrefix))
+    .map((d) => parseInt(d.receiptNo.slice(-4), 10))
+    .filter((n) => Number.isFinite(n))
+    .reduce((m, n) => Math.max(m, n), 0);
+  const seq = String(maxSeq + 1).padStart(4, '0');
   const donation: Donation = {
     id: `d-local-${Date.now()}`,
     devoteeName: input.anonymous ? 'Anonymous' : input.devoteeName.trim(),
@@ -344,7 +356,7 @@ export function createDonation(input: NewDonationInput): Donation {
     note: input.note?.trim() || undefined,
     anonymous: input.anonymous,
     mode: input.mode,
-    receiptNo: `SDP-D-${year}-${seq}`,
+    receiptNo: `${receiptPrefix}-${seq}`,
     createdAt: new Date().toISOString().slice(0, 10),
   };
   const list = loadLocalDonations();
