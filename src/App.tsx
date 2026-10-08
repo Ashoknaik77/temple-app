@@ -24,6 +24,7 @@ import { AdminBookingFormScreen } from './screens/admin/AdminBookingFormScreen';
 import { AdminDonationsScreen } from './screens/admin/AdminDonationsScreen';
 import { EventsScreen } from './screens/EventsScreen';
 import { TimingsScreen } from './screens/TimingsScreen';
+import { ContactScreen } from './screens/ContactScreen';
 import { AdminAnnouncementsScreen } from './screens/admin/AdminAnnouncementsScreen';
 import { AdminUsersScreen } from './screens/admin/AdminUsersScreen';
 import { AdminReportsScreen } from './screens/admin/AdminReportsScreen';
@@ -73,7 +74,7 @@ export default function App() {
             <Route path="/donations/:receiptNo" element={<DonationReceiptScreen />} />
             <Route path="/events" element={<EventsScreen />} />
             <Route path="/timings" element={<TimingsScreen />} />
-            <Route path="/contact" element={<PlaceholderScreen titleKey="contactTemple" />} />
+            <Route path="/contact" element={<ContactScreen />} />
             <Route path="/darshan" element={<PlaceholderScreen titleKey="liveDarshan" />} />
             <Route path="/gallery" element={<PlaceholderScreen titleKey="gallery" />} />
             <Route path="/more" element={<MoreScreen />} />

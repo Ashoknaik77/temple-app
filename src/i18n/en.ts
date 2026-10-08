@@ -192,6 +192,8 @@ export const en = {
   noTimings: 'Timings have not been added yet.',
   timingsNote: 'Timings may change on festival days. Contact the temple office to confirm.',
   downloadPdf: 'Download PDF',
+  templeOffice: 'Temple office',
+  templeAdmins: 'Temple admins',
 } as const;
 
 export type EnKeys = keyof typeof en;
