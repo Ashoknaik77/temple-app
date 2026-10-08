@@ -14,7 +14,10 @@ import type {
 
 export const templeProfile: TempleProfile = {
   name: { en: 'Shri Durga Parameshwari Temple', kn: 'ಶ್ರೀ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಸ್ಥಾನ' },
-  tagline: { en: 'Kateel — Abode of Goddess Durga', kn: 'ಕಟೀಲ್ — ದುರ್ಗಾ ದೇವಿಯ ಸನ್ನಿಧಿ' },
+  tagline: {
+    en: 'Sri Durga Parameshwari Temple located in Koruvail (Koruvale), Kudlu, Kasaragod',
+    kn: 'ಕಾಸರಗೋಡು, ಕುಡ್ಲು, ಕೊರುವೈಲ್ (ಕೊರುವಲೆ)ನಲ್ಲಿರುವ ಶ್ರೀ ದುರ್ಗಾ ಪರಮೇಶ್ವರಿ ದೇವಸ್ಥಾನ',
+  },
   logoUrl: '',
   coverUrl: '',
   galleryUrls: [],
