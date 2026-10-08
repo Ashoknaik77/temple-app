@@ -117,6 +117,16 @@ export const en = {
   bookingSummary: 'Booking summary',
   invalidPhone: 'Please enter a valid 10-digit phone number.',
   nameRequired: 'Please enter your name.',
+  donateNow: 'Donate Now',
+  receiptNo: 'Receipt No.',
+  donorName: 'Donor name',
+  customAmount: 'Custom amount',
+  purposeAnnadaan: 'Annadaan',
+  purposeMaintenance: 'Temple Maintenance',
+  purposeGopuja: 'Gopuja',
+  purposeVidyaDaan: 'Vidya Daan',
+  purposeGeneral: 'General',
+  purposeOther: 'Other',
 } as const;
 
 export type EnKeys = keyof typeof en;

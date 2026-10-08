@@ -7,6 +7,9 @@ import { SevaDetailScreen } from './screens/SevaDetailScreen';
 import { BookingFormScreen } from './screens/BookingFormScreen';
 import { BookingDetailScreen } from './screens/BookingDetailScreen';
 import { MyBookingsScreen } from './screens/MyBookingsScreen';
+import { DonateScreen } from './screens/DonateScreen';
+import { DonationReceiptScreen } from './screens/DonationReceiptScreen';
+import { DonationHistoryScreen } from './screens/DonationHistoryScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 
 export default function App() {
@@ -21,7 +24,9 @@ export default function App() {
             <Route path="/sevas/:sevaId/book" element={<BookingFormScreen />} />
             <Route path="/bookings" element={<MyBookingsScreen />} />
             <Route path="/bookings/:code" element={<BookingDetailScreen />} />
-            <Route path="/donate" element={<PlaceholderScreen titleKey="donateTitle" />} />
+            <Route path="/donate" element={<DonateScreen />} />
+            <Route path="/donations" element={<DonationHistoryScreen />} />
+            <Route path="/donations/:receiptNo" element={<DonationReceiptScreen />} />
             <Route path="/events" element={<PlaceholderScreen titleKey="upcomingEvents" />} />
             <Route path="/timings" element={<PlaceholderScreen titleKey="dailyTimings" />} />
             <Route path="/contact" element={<PlaceholderScreen titleKey="contactTemple" />} />

@@ -290,3 +290,69 @@ export function cancelBooking(id: string): boolean {
 export function findBookingByCode(code: string): Booking | null {
   return allBookings().find((b) => b.bookingCode === code) ?? null;
 }
+
+/* ---------------- Donation engine (mock layer) ---------------- */
+
+const LOCAL_DONATIONS_KEY = 'temple-donations-v1';
+
+export function loadLocalDonations(): Donation[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_DONATIONS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? (arr as Donation[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistLocalDonations(list: Donation[]): void {
+  localStorage.setItem(LOCAL_DONATIONS_KEY, JSON.stringify(list));
+}
+
+/** All donations: sample data + devotee's own (persisted locally), newest first. */
+export function allDonations(): Donation[] {
+  return [...myDonations, ...loadLocalDonations()].sort((a, b) =>
+    a.createdAt === b.createdAt ? 0 : a.createdAt < b.createdAt ? 1 : -1,
+  );
+}
+
+export interface NewDonationInput {
+  devoteeName: string;
+  phone: string;
+  email?: string;
+  amount: number;
+  purpose: Donation['purpose'];
+  note?: string;
+  anonymous: boolean;
+  mode: 'online' | 'offline';
+}
+
+export function createDonation(input: NewDonationInput): Donation {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error('invalid amount');
+  }
+  const year = new Date().getFullYear();
+  const seq = String(loadLocalDonations().length + 1).padStart(4, '0');
+  const donation: Donation = {
+    id: `d-local-${Date.now()}`,
+    devoteeName: input.anonymous ? 'Anonymous' : input.devoteeName.trim(),
+    phone: input.phone.replace(/\D/g, '').slice(-10),
+    email: input.email?.trim() || undefined,
+    amount: Math.round(input.amount),
+    purpose: input.purpose,
+    note: input.note?.trim() || undefined,
+    anonymous: input.anonymous,
+    mode: input.mode,
+    receiptNo: `SDP-D-${year}-${seq}`,
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+  const list = loadLocalDonations();
+  list.push(donation);
+  persistLocalDonations(list);
+  return donation;
+}
+
+export function findDonationByReceipt(receiptNo: string): Donation | null {
+  return allDonations().find((d) => d.receiptNo === receiptNo) ?? null;
+}
