@@ -182,6 +182,7 @@ export const en = {
   bookings: 'bookings',
   donationsReceived: 'Donations',
   collectedBy: 'Collected by',
+  receiptPdf: 'Receipt (PDF)',
 } as const;
 
 export type EnKeys = keyof typeof en;

@@ -922,6 +922,40 @@ export function collectionReport(from: string, to: string): CollectionReport {
   };
 }
 
+/* ---------------- seva payment receipts ---------------- */
+
+/** Next sequential seva receipt number, e.g. SDP-R-2026-0001. */
+export function nextSevaReceiptNo(): string {
+  const s = ensureState();
+  const year = new Date().getFullYear();
+  const prefix = `SDP-R-${year}-`;
+  let max = 0;
+  for (const b of s.bookings) {
+    const m = b.receiptNo?.match(/^SDP-R-(\d{4})-(\d{4})$/);
+    if (m && m[1] === String(year)) max = Math.max(max, Number(m[2]));
+  }
+  return `${prefix}${String(max + 1).padStart(4, '0')}`;
+}
+
+/**
+ * Issue (or re-fetch) the payment receipt number for a paid booking.
+ * The number is generated once and stored so reprints stay identical.
+ */
+export async function issueSevaReceipt(id: string): Promise<string | null> {
+  const s = ensureState();
+  const ix = s.bookings.findIndex((b) => b.id === id);
+  if (ix < 0) return null;
+  const b = s.bookings[ix];
+  if (b.paymentStatus !== 'paid') return null;
+  if (b.receiptNo) return b.receiptNo;
+  const receiptNo = nextSevaReceiptNo();
+  const updated = { ...b, receiptNo };
+  if (backend === 'firestore') await fsSet('bookings', id, updated);
+  else persistLocal();
+  s.bookings[ix] = updated;
+  return receiptNo;
+}
+
 /* ---------------- week helpers (Monday..Sunday) ---------------- */
 
 function isoOf(d: Date): string {

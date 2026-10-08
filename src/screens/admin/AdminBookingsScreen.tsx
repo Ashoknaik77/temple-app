@@ -7,9 +7,13 @@ import {
   cancelBooking,
   completeBooking,
   currentAdmin,
+  getSevas,
+  getTempleProfile,
+  issueSevaReceipt,
   setPaymentStatus,
   weekRange,
 } from '../../data/mock';
+import { downloadSevaReceiptPdf } from '../../lib/sevaReceiptPdf';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { fmtDate, fmtTime, toISODate, useLocalText } from '../../components/text';
 import type { Booking } from '../../types';
@@ -133,8 +137,32 @@ function BookingCard({
   onAct: (id: string, fn: (id: string) => Promise<boolean>) => Promise<void>;
   onTogglePaid: (id: string, currentlyPaid: boolean) => Promise<void>;
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const loc = useLocalText();
+
+  async function receipt() {
+    const receiptNo = await issueSevaReceipt(b.id);
+    if (!receiptNo) return;
+    const profile = getTempleProfile();
+    const seva = getSevas().find((s) => s.id === b.sevaId);
+    downloadSevaReceiptPdf({
+      templeName: profile.name.en,
+      templeAddress: profile.address,
+      templePhone: profile.phone,
+      receiptNo,
+      date: fmtDate(b.paidAt ?? new Date().toISOString().slice(0, 10), lang),
+      devoteeName: b.devoteeName,
+      place: b.place,
+      phone: b.phone,
+      sevaName: loc(b.sevaName),
+      sevaDate: fmtDate(b.date, lang),
+      sevaTime: fmtTime(b.time),
+      amount: seva?.price ?? 0,
+      collectedBy: b.paidBy ?? currentAdmin()?.name ?? '',
+      bookingCode: b.bookingCode,
+    });
+  }
+
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-2">
@@ -202,6 +230,15 @@ function BookingCard({
           }`}
         >
           {b.paymentStatus === 'paid' ? t('markUnpaid') : t('markPaid')}
+        </button>
+      )}
+      {b.paymentStatus === 'paid' && b.status !== 'cancelled' && (
+        <button
+          type="button"
+          onClick={receipt}
+          className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-bold text-maroon-800 shadow-sm ring-1 ring-stone-200"
+        >
+          <span aria-hidden>🧾</span> {t('receiptPdf')}
         </button>
       )}
     </div>

@@ -2,7 +2,16 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { useLang } from '../i18n';
-import { cancelBooking, findBookingByCode } from '../data/mock';
+import {
+  cancelBooking,
+  currentAdmin,
+  findBookingByCode,
+  getSevas,
+  getTempleProfile,
+  isAdminAuthed,
+  issueSevaReceipt,
+} from '../data/mock';
+import { downloadSevaReceiptPdf } from '../lib/sevaReceiptPdf';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, toISODate, useLocalText } from '../components/text';
 
@@ -33,6 +42,32 @@ export function BookingDetailScreen() {
     if (!booking) return;
     if (await cancelBooking(booking.id)) setCancelled(true);
   }
+
+  async function onReceipt() {
+    if (!booking) return;
+    const receiptNo = await issueSevaReceipt(booking.id);
+    if (!receiptNo) return;
+    const profile = getTempleProfile();
+    const seva = getSevas().find((s) => s.id === booking.sevaId);
+    downloadSevaReceiptPdf({
+      templeName: profile.name.en,
+      templeAddress: profile.address,
+      templePhone: profile.phone,
+      receiptNo,
+      date: fmtDate(booking.paidAt ?? new Date().toISOString().slice(0, 10), lang),
+      devoteeName: booking.devoteeName,
+      place: booking.place,
+      phone: booking.phone,
+      sevaName: loc(booking.sevaName),
+      sevaDate: fmtDate(booking.date, lang),
+      sevaTime: fmtTime(booking.time),
+      amount: seva?.price ?? 0,
+      collectedBy: booking.paidBy ?? currentAdmin()?.name ?? '',
+      bookingCode: booking.bookingCode,
+    });
+  }
+
+  const showReceipt = isAdminAuthed() && booking.paymentStatus === 'paid' && !isCancelled;
 
   return (
     <div className="pb-24">
@@ -107,6 +142,16 @@ export function BookingDetailScreen() {
             </dd>
           </div>
         </dl>
+
+        {showReceipt && (
+          <button
+            type="button"
+            onClick={onReceipt}
+            className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-white text-base font-bold text-maroon-800 shadow-sm ring-1 ring-stone-200"
+          >
+            <span aria-hidden>🧾</span> {t('receiptPdf')}
+          </button>
+        )}
 
         {canCancel && (
           <button

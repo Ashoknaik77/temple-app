@@ -78,7 +78,7 @@ service cloud.firestore {
         && request.resource.data.status in ['confirmed', 'cancelled', 'completed']
         && request.resource.data.paymentStatus in ['unpaid', 'paid'];
       // Only status / payment-status transitions allowed after creation.
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentStatus', 'paidBy', 'paidAt'])
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentStatus', 'paidBy', 'paidAt', 'receiptNo'])
         && request.resource.data.status in ['confirmed', 'cancelled', 'completed']
         && request.resource.data.paymentStatus in ['unpaid', 'paid'];
       allow delete: if false;

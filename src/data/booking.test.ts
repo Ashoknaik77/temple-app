@@ -6,6 +6,7 @@ import {
   findBookingByCode,
   getSlotBooked,
   initData,
+  issueSevaReceipt,
   loadLocalBookings,
   seatsLeft,
   setPaymentStatus,
@@ -187,6 +188,49 @@ describe('payment status (admin marks paid after UPI/cash)', () => {
 
   it('returns false for unknown id', async () => {
     expect(await setPaymentStatus('missing', 'paid')).toBe(false);
+  });
+
+  it('issues sequential receipt numbers only for paid bookings', async () => {
+    const unpaid = await createBooking({
+      sevaId: 'archana',
+      date: '2026-10-24',
+      time: '06:00',
+      devoteeName: 'No Receipt',
+      phone: '9876543210',
+      place: 'Kasaragod',
+      payMode: 'payAtTemple',
+    });
+    expect(await issueSevaReceipt(unpaid.id)).toBeNull();
+
+    const paid = await createBooking({
+      sevaId: 'archana',
+      date: '2026-10-24',
+      time: '08:00',
+      devoteeName: 'Receipt One',
+      phone: '9876543210',
+      place: 'Kasaragod',
+      payMode: 'payAtTemple',
+      paymentStatus: 'paid',
+      paidBy: 'Retest Owner',
+    });
+    const r1 = await issueSevaReceipt(paid.id);
+    expect(r1).toMatch(/^SDP-R-2026-\d{4}$/);
+    // re-issuing returns the same number (stable for reprints)
+    expect(await issueSevaReceipt(paid.id)).toBe(r1);
+    expect(findBookingByCode(paid.bookingCode)?.receiptNo).toBe(r1);
+
+    const paid2 = await createBooking({
+      sevaId: 'archana',
+      date: '2026-10-24',
+      time: '10:00',
+      devoteeName: 'Receipt Two',
+      phone: '9876543210',
+      place: 'Kasaragod',
+      payMode: 'payAtTemple',
+      paymentStatus: 'paid',
+    });
+    const r2 = await issueSevaReceipt(paid2.id);
+    expect(r2).not.toBe(r1);
   });
 
   it('records which admin marked a booking paid', async () => {

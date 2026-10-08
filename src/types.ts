@@ -71,6 +71,7 @@ export interface Booking {
   paymentStatus: PaymentStatus; // unpaid until the temple office confirms payment
   paidBy?: string; // name of the admin who marked it paid
   paidAt?: string; // date it was marked paid (YYYY-MM-DD)
+  receiptNo?: string; // seva payment receipt number (issued once paid)
   place: string; // devotee's place / town
   note?: string; // optional note for the temple office
   createdAt: string;
