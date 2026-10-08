@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { getSevas, seatsLeft } from '../data/mock';
+import { getSevas } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, toISODate, useLocalText } from '../components/text';
 
@@ -88,22 +88,14 @@ export function SevaDetailScreen() {
 
         <div className="mt-3 grid grid-cols-2 gap-3">
           {seva.slotTimes.map((time) => {
-            const left = seatsLeft(seva.id, date, time);
-            const full = left <= 0;
             return (
               <button
                 key={time}
                 type="button"
-                disabled={full}
                 onClick={() => navigate(`/sevas/${seva.id}/book?date=${date}&time=${time}`)}
-                className={`min-h-[72px] rounded-2xl p-3 text-left shadow-sm ${
-                  full ? 'bg-stone-100 text-stone-400' : 'bg-white active:bg-amber-50'
-                }`}
+                className="min-h-[72px] rounded-2xl bg-white p-3 text-left shadow-sm active:bg-amber-50"
               >
                 <div className="text-xl font-extrabold text-stone-900">{fmtTime(time)}</div>
-                <div className={`mt-1 text-sm font-semibold ${full ? '' : 'text-emerald-700'}`}>
-                  {full ? t('slotFull') : `${left} ${t('seatsLeft')}`}
-                </div>
               </button>
             );
           })}

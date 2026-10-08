@@ -120,9 +120,9 @@ describe('createBooking', () => {
     ).rejects.toThrow();
   });
 
-  it('throws when the slot is full', async () => {
-    // naga-seva capacity is 8; fill the single 09:00 slot on 2026-10-13
-    for (let i = 0; i < 8; i++) {
+  it('has no per-slot booking limit (slots never fill up)', async () => {
+    // naga-seva capacity is 8; booking beyond capacity must still succeed
+    for (let i = 0; i < 10; i++) {
       await createBooking({
         sevaId: 'naga-seva',
         date: '2026-10-13',
@@ -133,18 +133,16 @@ describe('createBooking', () => {
         payMode: 'online',
       });
     }
-    expect(seatsLeft('naga-seva', '2026-10-13', '09:00')).toBe(0);
-    await expect(
-      createBooking({
-        sevaId: 'naga-seva',
-        date: '2026-10-13',
-        time: '09:00',
-        devoteeName: 'One Too Many',
-        phone: '9876543210',
-        place: 'Kasaragod',
-        payMode: 'online',
-      }),
-    ).rejects.toThrow('slot full');
+    const extra = await createBooking({
+      sevaId: 'naga-seva',
+      date: '2026-10-13',
+      time: '09:00',
+      devoteeName: 'One More',
+      phone: '9876543210',
+      place: 'Kasaragod',
+      payMode: 'online',
+    });
+    expect(extra.bookingCode).toMatch(/^SDP-20261013-/);
   });
 });
 

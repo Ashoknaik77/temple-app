@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '../../i18n';
-import { createBooking, currentAdmin, getSevas, seatsLeft } from '../../data/mock';
+import { createBooking, currentAdmin, getSevas } from '../../data/mock';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { toISODate, useLocalText } from '../../components/text';
 
@@ -17,14 +17,13 @@ export function AdminBookingFormScreen() {
   const [time, setTime] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [place, setPlace] = useState('');
+  const [place, setPlace] = useState('Kasaragod');
   const [note, setNote] = useState('');
   const [paid, setPaid] = useState(false);
   const [error, setError] = useState('');
 
   const seva = sevas.find((s) => s.id === sevaId);
   const slotTimes = seva?.slotTimes ?? [];
-  const left = seva && time ? seatsLeft(seva.id, date, time) : null;
 
   const inputCls =
     'mt-1 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base focus:border-amber-600 focus:outline-none';
@@ -61,8 +60,8 @@ export function AdminBookingFormScreen() {
         paidBy: paid ? currentAdmin()?.name : undefined,
       });
       navigate(`/bookings/${booking.bookingCode}`, { replace: true });
-    } catch (e) {
-      setError(e instanceof Error && e.message === 'slot full' ? t('slotFull') : t('tryAgain'));
+    } catch {
+      setError(t('tryAgain'));
     }
   }
 
@@ -120,17 +119,11 @@ export function AdminBookingFormScreen() {
                 {slotTimes.map((st) => (
                   <option key={st} value={st}>
                     {st}
-                    {seva ? ` (${seatsLeft(seva.id, date, st)} ${t('seatsLeft')})` : ''}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-          {left !== null && (
-            <p className="text-sm font-semibold text-stone-500">
-              {left} {t('seatsLeft')}
-            </p>
-          )}
 
           <div>
             <label className="text-sm font-bold text-stone-800" htmlFor="ab-name">

@@ -21,7 +21,7 @@ export function BookingFormScreen() {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [place, setPlace] = useState('');
+  const [place, setPlace] = useState('Kasaragod');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
@@ -60,8 +60,8 @@ export function BookingFormScreen() {
         payMode: 'payAtTemple',
       });
       navigate(`/bookings/${booking.bookingCode}`, { replace: true });
-    } catch (e) {
-      setError(e instanceof Error && e.message === 'slot full' ? t('slotFull') : t('tryAgain'));
+    } catch {
+      setError(t('tryAgain'));
     }
   }
 

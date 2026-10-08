@@ -192,6 +192,7 @@ export const en = {
   noTimings: 'Timings have not been added yet.',
   timingsNote: 'Timings may change on festival days. Contact the temple office to confirm.',
   downloadPdf: 'Download PDF',
+  searchNamePhone: 'Search name or phone…',
   templeOffice: 'Temple office',
   templeAdmins: 'Temple admins',
 } as const;

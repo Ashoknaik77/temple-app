@@ -539,9 +539,7 @@ export async function createBooking(input: NewBookingInput): Promise<Booking> {
   if (!seva) throw new Error(`unknown seva ${input.sevaId}`);
   if (!input.devoteeName.trim()) throw new Error('name required');
   if (!input.place.trim()) throw new Error('place required');
-  if (seatsLeft(input.sevaId, input.date, input.time) < 1) {
-    throw new Error('slot full');
-  }
+  // No per-slot booking limit (user decision 2026-10-08): slots never fill up.
   const codePrefix = `SDP-${input.date.replace(/-/g, '')}`;
   const maxSeq = s.bookings
     .filter((b) => b.bookingCode.startsWith(codePrefix))

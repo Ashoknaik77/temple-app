@@ -194,6 +194,7 @@ export const kn: Partial<Record<EnKeys, string>> = {
   noTimings: 'ಸಮಯವನ್ನು ಇನ್ನೂ ಸೇರಿಸಲಾಗಿಲ್ಲ.',
   timingsNote: 'ಹಬ್ಬದ ದಿನಗಳಲ್ಲಿ ಸಮಯ ಬದಲಾಗಬಹುದು. ದೃಢೀಕರಿಸಲು ದೇವಸ್ಥಾನದ ಕಛೇರಿಯನ್ನು ಸಂಪರ್ಕಿಸಿ.',
   downloadPdf: 'PDF ಡೌನ್‌ಲೋಡ್',
+  searchNamePhone: 'ಹೆಸರು ಅಥವಾ ಫೋನ್ ಹುಡುಕಿ…',
   templeOffice: 'ದೇವಸ್ಥಾನದ ಕಛೇರಿ',
   templeAdmins: 'ದೇವಸ್ಥಾನದ ಆಡಳಿತಗಾರರು',
 };

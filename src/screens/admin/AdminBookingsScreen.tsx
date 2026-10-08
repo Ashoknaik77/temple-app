@@ -58,7 +58,21 @@ export function AdminBookingsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, mode, refresh]);
 
-  const total = groups.reduce((n, g) => n + g.bookings.length, 0);
+  // Quick search by devotee name or phone (for walk-in payments).
+  const [query, setQuery] = useState('');
+  const visibleGroups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return groups;
+    const qDigits = q.replace(/\D/g, '');
+    const match = (b: Booking) =>
+      b.devoteeName.toLowerCase().includes(q) ||
+      (qDigits && b.phone.replace(/\D/g, '').includes(qDigits));
+    return groups
+      .map((g) => ({ ...g, bookings: g.bookings.filter(match) }))
+      .filter((g) => g.bookings.length > 0);
+  }, [groups, query]);
+
+  const total = visibleGroups.reduce((n, g) => n + g.bookings.length, 0);
   const rangeLabel =
     mode === 'day'
       ? fmtDate(date, lang)
@@ -88,6 +102,17 @@ export function AdminBookingsScreen() {
         >
           + {t('newBooking')}
         </Link>
+
+        <div className="mt-3">
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('searchNamePhone')}
+            aria-label={t('searchNamePhone')}
+            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-base focus:border-amber-600 focus:outline-none"
+          />
+        </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2 rounded-2xl bg-stone-100 p-1">
           {(['day', 'week'] as const).map((m) => (
@@ -147,7 +172,7 @@ export function AdminBookingsScreen() {
         </p>
 
         <div className="mt-2 space-y-5">
-          {groups.map(
+          {visibleGroups.map(
             (g) =>
               g.bookings.length > 0 && (
                 <section key={g.date} aria-label={g.date}>
