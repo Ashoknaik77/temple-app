@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Deploy ~/workspace/temple-app/dist to Firebase Hosting via REST API."""
+"""Deploy ~/workspace/temple-app/dist to Firebase Hosting via REST API (curl-based)."""
 import gzip
 import hashlib
 import json
 import os
 import subprocess
 import sys
-import urllib.request
-import urllib.error
+import time
 
 SITE = "sri-durga-parameshwari"
 DIST = os.path.expanduser("~/workspace/temple-app/dist")
@@ -25,19 +24,38 @@ def token():
     return out.stdout.strip()
 
 
-def req(method, url, body=None):
-    data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + token())
-    r.add_header("x-goog-user-project", QUOTA)
-    if data:
-        r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode()[:500]
-        raise RuntimeError(f"{method} {url} -> {e.code}: {detail}")
+def req(method, url, body=None, raw_data=None, content_type="application/json", tries=4):
+    """HTTP via curl (robust against the sandbox's flaky chunked-encoding path)."""
+    last = None
+    for attempt in range(tries):
+        cmd = [
+            "curl", "-sS", "--max-time", "120", "-X", method, url,
+            "-H", "Authorization: Bearer " + token(),
+            "-H", "x-goog-user-project: " + QUOTA,
+        ]
+        if body is not None:
+            cmd += ["-H", f"Content-Type: {content_type}", "-d", json.dumps(body)]
+        elif raw_data is not None:
+            tmp = f"/tmp/deploy_upload_{os.getpid()}.bin"
+            with open(tmp, "wb") as f:
+                f.write(raw_data)
+            cmd += ["-H", f"Content-Type: {content_type}", "--data-binary", "@" + tmp]
+        else:
+            cmd += ["-H", "Content-Type: application/json"]
+        # fail on HTTP errors, but still capture body for diagnostics
+        cmd += ["-w", "\n%{http_code}"]
+        try:
+            out = subprocess.run(cmd, capture_output=True, text=True, timeout=150)
+            text = out.stdout
+            code = text.rsplit("\n", 1)[-1].strip() if text else ""
+            payload = text[: text.rfind("\n")] if "\n" in text else ""
+            if out.returncode == 0 and code.startswith("2"):
+                return json.loads(payload) if payload else {}
+            last = f"curl rc={out.returncode} http={code} body={payload[:300]} err={out.stderr[:200]}"
+        except Exception as e:  # noqa: BLE001
+            last = f"exception: {e}"
+        time.sleep(5 * (attempt + 1))
+    raise RuntimeError(f"{method} {url} failed after {tries} tries: {last}")
 
 
 def gz(b: bytes) -> bytes:
@@ -69,10 +87,8 @@ def main():
     for h in needed:
         path = hash_to_path[h]
         blob, _ = files[path]
-        r = urllib.request.Request(base_url + "/" + h, data=blob, method="POST")
-        r.add_header("Content-Type", "application/octet-stream")
-        r.add_header("Authorization", "Bearer " + token())
-        urllib.request.urlopen(r).read()
+        req("POST", base_url + "/" + h, raw_data=blob,
+            content_type="application/octet-stream")
     print("uploads done")
 
     req("PATCH", f"{API}/{vname}?updateMask=status", {"status": "FINALIZED"})

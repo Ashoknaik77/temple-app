@@ -13,7 +13,9 @@ export function AdminSevaFormScreen() {
   const { t } = useLang();
   const navigate = useNavigate();
   const { id } = useParams();
-  const isNew = id === 'new';
+  // '/admin/sevas/new' is a static route with no :id param (id === undefined);
+  // treat both as "create new".
+  const isNew = !id || id === 'new';
   const existing = isNew ? null : getSevas().find((s) => s.id === id);
 
   const [nameEn, setNameEn] = useState(existing?.name.en ?? '');

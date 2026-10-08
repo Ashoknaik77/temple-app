@@ -14,7 +14,9 @@ export function AdminEventFormScreen() {
   const { t } = useLang();
   const navigate = useNavigate();
   const { id } = useParams();
-  const isNew = id === 'new';
+  // '/admin/events/new' is a static route with no :id param (id === undefined);
+  // treat both as "create new".
+  const isNew = !id || id === 'new';
   const existing = isNew ? null : getEvents().find((e) => e.id === id);
 
   const [nameEn, setNameEn] = useState(existing?.name.en ?? '');
