@@ -7,6 +7,15 @@ import { kn } from './kn';
 export type Lang = 'en' | 'kn';
 const STORE_KEY = 'temple-lang';
 
+/** Pure translation: Kannada falls back to English for missing keys. */
+export function translate(lang: Lang, key: EnKeys): string {
+  if (lang === 'kn') {
+    const v = kn[key];
+    if (v) return v;
+  }
+  return en[key];
+}
+
 interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
@@ -38,16 +47,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang === 'kn' ? 'kn' : 'en';
   }, [lang]);
 
-  const t = useCallback(
-    (key: EnKeys): string => {
-      if (lang === 'kn') {
-        const v = kn[key];
-        if (v) return v;
-      }
-      return en[key];
-    },
-    [lang],
-  );
+  const t = useCallback((key: EnKeys): string => translate(lang, key), [lang]);
 
   return <Ctx.Provider value={{ lang, setLang, t }}>{children}</Ctx.Provider>;
 }
