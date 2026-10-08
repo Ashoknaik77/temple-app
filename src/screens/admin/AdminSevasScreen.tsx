@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n';
 import { getSevas, saveSeva } from '../../data/mock';
@@ -9,10 +10,14 @@ export function AdminSevasScreen() {
   const { t } = useLang();
   const loc = useLocalText();
   const sevas = getSevas();
+  const [, setRefresh] = useState(0);
 
-  function toggle(id: string) {
+  async function toggle(id: string) {
     const s = sevas.find((x) => x.id === id);
-    if (s) saveSeva({ ...s, active: !s.active });
+    if (s) {
+      await saveSeva({ ...s, active: !s.active });
+      setRefresh((r) => r + 1);
+    }
   }
 
   return (

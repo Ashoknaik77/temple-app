@@ -54,11 +54,12 @@ describe('mock data integrity', () => {
     }
   });
 
-  it('bookings reference known sevas', () => {
+  it('bookings reference known sevas and carry a payment status', () => {
     const sevaIds = new Set(sevas.map((s) => s.id));
     for (const b of myBookings) {
       expect(sevaIds.has(b.sevaId)).toBe(true);
       expect(b.bookingCode.length).toBeGreaterThan(0);
+      expect(['unpaid', 'paid']).toContain(b.paymentStatus);
     }
   });
 

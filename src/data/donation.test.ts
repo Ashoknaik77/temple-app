@@ -1,19 +1,21 @@
-/** Unit tests for the mock donation engine. */
+/** Unit tests for the donation engine (local backend — no network). */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   allDonations,
   createDonation,
   findDonationByReceipt,
+  initData,
   loadLocalDonations,
 } from './mock';
 
-beforeEach(() => {
+beforeEach(async () => {
   localStorage.clear();
+  await initData({ backend: 'local' });
 });
 
 describe('createDonation', () => {
-  it('creates a donation with a receipt number and persists it', () => {
-    const d = createDonation({
+  it('creates a donation with a receipt number and persists it', async () => {
+    const d = await createDonation({
       devoteeName: 'Test Donor',
       phone: '+91 98765 43210',
       amount: 1100,
@@ -28,8 +30,8 @@ describe('createDonation', () => {
     expect(findDonationByReceipt(d.receiptNo)?.id).toBe(d.id);
   });
 
-  it('masks the donor name when anonymous', () => {
-    const d = createDonation({
+  it('masks the donor name when anonymous', async () => {
+    const d = await createDonation({
       devoteeName: 'Should Be Hidden',
       phone: '9876543210',
       amount: 501,
@@ -41,8 +43,8 @@ describe('createDonation', () => {
     expect(d.devoteeName).toBe('Anonymous');
   });
 
-  it('rejects zero or negative amounts', () => {
-    expect(() =>
+  it('rejects zero or negative amounts', async () => {
+    await expect(
       createDonation({
         devoteeName: 'X',
         phone: '9876543210',
@@ -51,8 +53,8 @@ describe('createDonation', () => {
         anonymous: false,
         mode: 'online',
       }),
-    ).toThrow();
-    expect(() =>
+    ).rejects.toThrow();
+    await expect(
       createDonation({
         devoteeName: 'X',
         phone: '9876543210',
@@ -61,11 +63,11 @@ describe('createDonation', () => {
         anonymous: false,
         mode: 'online',
       }),
-    ).toThrow();
+    ).rejects.toThrow();
   });
 
-  it('rounds fractional amounts to whole rupees', () => {
-    const d = createDonation({
+  it('rounds fractional amounts to whole rupees', async () => {
+    const d = await createDonation({
       devoteeName: 'X',
       phone: '9876543210',
       amount: 100.6,
@@ -78,8 +80,8 @@ describe('createDonation', () => {
 });
 
 describe('allDonations', () => {
-  it('includes the sample donation and lists newest first', () => {
-    createDonation({
+  it('includes the sample donation and lists newest first', async () => {
+    await createDonation({
       devoteeName: 'New Donor',
       phone: '9876543210',
       amount: 200,
@@ -94,9 +96,9 @@ describe('allDonations', () => {
 });
 
 describe('receipt number uniqueness (regression)', () => {
-  it('increments past the sample receipt for the same year', () => {
+  it('increments past the sample receipt for the same year', async () => {
     const year = new Date().getFullYear();
-    const d = createDonation({
+    const d = await createDonation({
       devoteeName: 'X',
       phone: '9876543210',
       amount: 100,

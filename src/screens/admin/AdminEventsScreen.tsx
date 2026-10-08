@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../../i18n';
 import { deleteEvent, getEvents } from '../../data/mock';
@@ -8,6 +9,7 @@ import { fmtDate, useLocalText } from '../../components/text';
 export function AdminEventsScreen() {
   const { t, lang } = useLang();
   const loc = useLocalText();
+  const [, setRefresh] = useState(0);
   const events = [...getEvents()].sort((a, b) => (a.date < b.date ? -1 : 1));
 
   return (
@@ -36,7 +38,9 @@ export function AdminEventsScreen() {
                 </Link>
                 <button
                   type="button"
-                  onClick={() => deleteEvent(e.id)}
+                  onClick={() => {
+                    void deleteEvent(e.id).then(() => setRefresh((r) => r + 1));
+                  }}
                   className="min-h-[48px] rounded-xl bg-stone-100 text-sm font-bold text-red-700"
                 >
                   {t('delete')}

@@ -51,6 +51,8 @@ export interface SevaSlot {
 
 export type BookingStatus = 'confirmed' | 'completed' | 'cancelled';
 export type PayMode = 'online' | 'payAtTemple';
+/** Payment is settled outside the app (UPI/cash at temple); admin marks it. */
+export type PaymentStatus = 'unpaid' | 'paid';
 
 export interface Booking {
   id: string;
@@ -61,11 +63,26 @@ export interface Booking {
   time: string;
   devoteeName: string;
   phone: string;
-  gotra?: string;
-  people: number;
-  sankalpa?: string;
+  gotra?: string; // legacy (older bookings)
+  people?: number; // legacy (older bookings)
+  sankalpa?: string; // legacy (older bookings)
   payMode: PayMode;
   status: BookingStatus;
+  paymentStatus: PaymentStatus; // unpaid until the temple office confirms payment
+  paidBy?: string; // name of the admin who marked it paid
+  paidAt?: string; // date it was marked paid (YYYY-MM-DD)
+  place: string; // devotee's place / town
+  note?: string; // optional note for the temple office
+  createdAt: string;
+}
+
+/** Temple admin user. Phone number is the unique id (Firestore doc id). */
+export interface AdminUser {
+  phone: string; // 10-digit, unique
+  name: string;
+  pinHash: string; // SHA-256 of the login PIN (never store the raw PIN)
+  role: 'super' | 'admin'; // super user creates/manages other admins
+  active: boolean;
   createdAt: string;
 }
 

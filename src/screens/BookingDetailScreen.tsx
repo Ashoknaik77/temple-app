@@ -29,9 +29,9 @@ export function BookingDetailScreen() {
   const canCancel =
     !isCancelled && booking.status === 'confirmed' && booking.date >= toISODate(new Date());
 
-  function onCancel() {
+  async function onCancel() {
     if (!booking) return;
-    if (cancelBooking(booking.id)) setCancelled(true);
+    if (await cancelBooking(booking.id)) setCancelled(true);
   }
 
   return (
@@ -68,16 +68,24 @@ export function BookingDetailScreen() {
             <dt className="text-stone-500">{t('phone')}</dt>
             <dd className="text-right font-bold text-stone-900">{booking.phone}</dd>
           </div>
-          {booking.gotra && (
+          {booking.place && (
             <div className="flex justify-between gap-3">
-              <dt className="text-stone-500">{t('gotra')}</dt>
-              <dd className="text-right font-bold text-stone-900">{booking.gotra}</dd>
+              <dt className="text-stone-500">{t('place')}</dt>
+              <dd className="text-right font-bold text-stone-900">{booking.place}</dd>
             </div>
           )}
-          <div className="flex justify-between gap-3">
-            <dt className="text-stone-500">{t('numPeople')}</dt>
-            <dd className="text-right font-bold text-stone-900">{booking.people}</dd>
-          </div>
+          {booking.note && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-stone-500">{t('note')}</dt>
+              <dd className="text-right font-bold text-stone-900">{booking.note}</dd>
+            </div>
+          )}
+          {booking.people != null && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-stone-500">{t('numPeople')}</dt>
+              <dd className="text-right font-bold text-stone-900">{booking.people}</dd>
+            </div>
+          )}
           <div className="flex justify-between gap-3">
             <dt className="text-stone-500">{t('status')}</dt>
             <dd
@@ -89,9 +97,13 @@ export function BookingDetailScreen() {
             </dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-stone-500">{t('confirmBooking')}</dt>
-            <dd className="text-right font-bold text-stone-900">
-              {booking.payMode === 'online' ? t('payNow') : t('payAtTemple')}
+            <dt className="text-stone-500">{t('paymentStatus')}</dt>
+            <dd
+              className={`text-right font-bold ${
+                booking.paymentStatus === 'paid' ? 'text-emerald-700' : 'text-amber-700'
+              }`}
+            >
+              {t(booking.paymentStatus)}
             </dd>
           </div>
         </dl>

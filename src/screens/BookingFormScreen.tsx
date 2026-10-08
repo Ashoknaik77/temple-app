@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLang } from '../i18n';
 import { createBooking, getSevas } from '../data/mock';
-import type { PayMode } from '../types';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, useLocalText } from '../components/text';
 
@@ -22,10 +21,8 @@ export function BookingFormScreen() {
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [gotra, setGotra] = useState('');
-  const [people, setPeople] = useState(1);
-  const [sankalpa, setSankalpa] = useState('');
-  const [payMode, setPayMode] = useState<PayMode>('payAtTemple');
+  const [place, setPlace] = useState('');
+  const [note, setNote] = useState('');
   const [error, setError] = useState('');
 
   if (!seva || !date || !time) {
@@ -37,7 +34,7 @@ export function BookingFormScreen() {
     );
   }
 
-  function submit() {
+  async function submit() {
     if (!seva) return;
     if (!name.trim()) {
       setError(t('nameRequired'));
@@ -47,21 +44,24 @@ export function BookingFormScreen() {
       setError(t('invalidPhone'));
       return;
     }
+    if (!place.trim()) {
+      setError(t('placeRequired'));
+      return;
+    }
     try {
-      const booking = createBooking({
+      const booking = await createBooking({
         sevaId: seva.id,
         date,
         time,
         devoteeName: name,
         phone,
-        gotra,
-        people,
-        sankalpa,
-        payMode,
+        place,
+        note,
+        payMode: 'payAtTemple',
       });
       navigate(`/bookings/${booking.bookingCode}`, { replace: true });
-    } catch {
-      setError(t('slotFull'));
+    } catch (e) {
+      setError(e instanceof Error && e.message === 'slot full' ? t('slotFull') : t('tryAgain'));
     }
   }
 
@@ -78,7 +78,7 @@ export function BookingFormScreen() {
             {fmtDate(date, lang)} · {fmtTime(time)}
           </p>
           <p className="mt-1 text-lg font-extrabold">
-            {seva.price === 0 ? t('freeEntry') : `₹${seva.price * people}`}
+            {seva.price === 0 ? t('freeEntry') : `₹${seva.price}`}
           </p>
         </div>
 
@@ -118,93 +118,42 @@ export function BookingFormScreen() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="bk-gotra" className="text-sm font-bold text-stone-800">
-                {t('gotra')}
-              </label>
-              <input
-                id="bk-gotra"
-                className={inputCls}
-                value={gotra}
-                onChange={(e) => setGotra(e.target.value)}
-                placeholder={t('gotra')}
-              />
-            </div>
-            <div>
-              <label htmlFor="bk-people" className="text-sm font-bold text-stone-800">
-                {t('numPeople')}
-              </label>
-              <div className="mt-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="−"
-                  onClick={() => setPeople((p) => Math.max(1, p - 1))}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-2xl font-bold text-stone-700 shadow-sm"
-                >
-                  −
-                </button>
-                <span id="bk-people" className="w-8 text-center text-xl font-extrabold">
-                  {people}
-                </span>
-                <button
-                  type="button"
-                  aria-label="+"
-                  onClick={() => setPeople((p) => Math.min(20, p + 1))}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-2xl font-bold text-stone-700 shadow-sm"
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div>
-            <label htmlFor="bk-sankalpa" className="text-sm font-bold text-stone-800">
-              {t('specialRequests')}
+            <label htmlFor="bk-place" className="text-sm font-bold text-stone-800">
+              {t('place')} *
             </label>
-            <textarea
-              id="bk-sankalpa"
+            <input
+              id="bk-place"
               className={inputCls}
-              rows={2}
-              value={sankalpa}
-              onChange={(e) => setSankalpa(e.target.value)}
+              value={place}
+              onChange={(e) => setPlace(e.target.value)}
+              placeholder={t('place')}
+              autoComplete="off"
             />
           </div>
 
-          <fieldset>
-            <legend className="text-sm font-bold text-stone-800">{t('confirmBooking')}</legend>
-            <div className="mt-2 grid grid-cols-2 gap-3">
-              {(
-                [
-                  { mode: 'payAtTemple', label: t('payAtTemple'), icon: '🛕' },
-                  { mode: 'online', label: t('payNow'), icon: '💳' },
-                ] as { mode: PayMode; label: string; icon: string }[]
-              ).map((o) => (
-                <button
-                  key={o.mode}
-                  type="button"
-                  aria-pressed={payMode === o.mode}
-                  onClick={() => setPayMode(o.mode)}
-                  className={`min-h-[72px] rounded-2xl p-3 text-center shadow-sm ${
-                    payMode === o.mode
-                      ? 'bg-amber-100 ring-2 ring-amber-600'
-                      : 'bg-white'
-                  }`}
-                >
-                  <div className="text-2xl" aria-hidden>
-                    {o.icon}
-                  </div>
-                  <div className="mt-1 text-sm font-bold text-stone-800">{o.label}</div>
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="bk-note" className="text-sm font-bold text-stone-800">
+              {t('note')}
+            </label>
+            <textarea
+              id="bk-note"
+              className={inputCls}
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+
+          <div className="rounded-2xl bg-amber-50 p-4 text-sm text-stone-700 ring-1 ring-amber-200">
+            <span aria-hidden>🙏 </span>
+            {t('payLaterNote')}
+          </div>
 
           <button
             type="button"
             onClick={submit}
-            className="min-h-[56px] w-full rounded-2xl bg-maroon-800 text-lg font-extrabold text-amber-100 shadow"
+            className="min-h-[56px] w-full scroll-mb-28 rounded-2xl bg-maroon-800 text-lg font-extrabold text-amber-100 shadow"
           >
             {t('confirmBooking')}
           </button>

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { allBookings } from '../data/mock';
+import { myDeviceBookings } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, toISODate, useLocalText } from '../components/text';
 
@@ -9,7 +9,7 @@ export function MyBookingsScreen() {
   const { t, lang } = useLang();
   const loc = useLocalText();
   const today = toISODate(new Date());
-  const bookings = allBookings();
+  const bookings = myDeviceBookings();
 
   const upcoming = bookings.filter((b) => b.date >= today && b.status === 'confirmed');
   const past = bookings.filter((b) => !(b.date >= today && b.status === 'confirmed'));
@@ -47,6 +47,10 @@ export function MyBookingsScreen() {
                       sub={`${fmtDate(b.date, lang)} · ${fmtTime(b.time)}`}
                       status={t('confirmed')}
                       statusCls="text-emerald-700"
+                      payment={t(b.paymentStatus)}
+                      paymentCls={
+                        b.paymentStatus === 'paid' ? 'text-emerald-700' : 'text-amber-700'
+                      }
                     />
                   ))}
                 </div>
@@ -84,12 +88,16 @@ function BookingRow({
   sub,
   status,
   statusCls,
+  payment,
+  paymentCls,
 }: {
   code: string;
   title: string;
   sub: string;
   status: string;
   statusCls: string;
+  payment?: string;
+  paymentCls?: string;
 }) {
   return (
     <Link
@@ -102,7 +110,10 @@ function BookingRow({
           <p className="mt-0.5 text-sm text-stone-500">{sub}</p>
           <p className="mt-0.5 text-xs font-mono text-stone-400">{code}</p>
         </div>
-        <span className={`shrink-0 text-sm font-bold ${statusCls}`}>{status}</span>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className={`text-sm font-bold ${statusCls}`}>{status}</span>
+          {payment && <span className={`text-xs font-bold ${paymentCls}`}>₹ {payment}</span>}
+        </div>
       </div>
     </Link>
   );

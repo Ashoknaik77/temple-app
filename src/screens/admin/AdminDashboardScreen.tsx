@@ -6,6 +6,7 @@ import {
   allBookings,
   allDonations,
   getTempleProfile,
+  isSuperAdmin,
 } from '../../data/mock';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { toISODate, useLocalText } from '../../components/text';
@@ -45,6 +46,10 @@ export function AdminDashboardScreen() {
     { to: '/admin/donations', icon: '💰', label: t('manageDonations') },
     { to: '/admin/announcements', icon: '📢', label: t('postAnnouncement') },
     { to: '/admin/profile', icon: '🛕', label: t('editTempleProfile') },
+    { to: '/admin/reports', icon: '📊', label: t('reports') },
+    ...(isSuperAdmin()
+      ? [{ to: '/admin/users', icon: '👥', label: t('adminUsers') }]
+      : []),
   ];
 
   function logout() {

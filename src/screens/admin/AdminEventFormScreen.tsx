@@ -35,7 +35,7 @@ export function AdminEventFormScreen() {
     );
   }
 
-  function submit() {
+  async function submit() {
     if (!nameEn.trim() || !date) {
       setError(t('nameRequired'));
       return;
@@ -49,7 +49,7 @@ export function AdminEventFormScreen() {
       location: location.trim(),
       rsvpEnabled: existing?.rsvpEnabled ?? false,
     };
-    saveEvent(event);
+    await saveEvent(event);
     navigate('/admin/events', { replace: true });
   }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLang } from '../../i18n';
-import { addAnnouncement, getAnnouncements } from '../../data/mock';
+import { addAnnouncement, deleteAnnouncement, getAnnouncements } from '../../data/mock';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { fmtDate, toISODate, useLocalText } from '../../components/text';
 
@@ -19,12 +19,17 @@ export function AdminAnnouncementsScreen() {
   const list = getAnnouncements();
   void refresh;
 
-  function submit() {
+  async function remove(id: string) {
+    await deleteAnnouncement(id);
+    setRefresh((r) => r + 1);
+  }
+
+  async function submit() {
     if (!textEn.trim()) {
       setError(t('nameRequired'));
       return;
     }
-    addAnnouncement({
+    await addAnnouncement({
       id: `a-${Date.now()}`,
       text: { en: textEn.trim(), kn: textKn.trim() || textEn.trim() },
       createdAt: toISODate(new Date()),
@@ -84,8 +89,20 @@ export function AdminAnnouncementsScreen() {
         <div className="mt-2 space-y-2">
           {list.map((a) => (
             <div key={a.id} className="rounded-2xl bg-white p-3 shadow-sm">
-              <p className="text-sm text-stone-800">{loc(a.text)}</p>
-              <p className="mt-1 text-xs text-stone-400">{fmtDate(a.createdAt, lang)}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm text-stone-800">{loc(a.text)}</p>
+                  <p className="mt-1 text-xs text-stone-400">{fmtDate(a.createdAt, lang)}</p>
+                </div>
+                <button
+                  type="button"
+                  aria-label={t('delete')}
+                  onClick={() => remove(a.id)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-base font-bold text-red-700"
+                >
+                  🗑
+                </button>
+              </div>
             </div>
           ))}
         </div>

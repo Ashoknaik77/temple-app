@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { allDonations } from '../data/mock';
+import { myDeviceDonations } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate } from '../components/text';
 
 /** Devotee's donation history with receipt links. */
 export function DonationHistoryScreen() {
   const { t, lang } = useLang();
-  const donations = allDonations();
+  const donations = myDeviceDonations();
   const total = donations.reduce((s, d) => s + d.amount, 0);
 
   return (

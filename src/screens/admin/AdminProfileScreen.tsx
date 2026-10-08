@@ -28,7 +28,7 @@ export function AdminProfileScreen() {
   const [evening, setEvening] = useState(current.timings.evening);
   const [friday, setFriday] = useState(current.timings.fridaySpecial);
 
-  function submit() {
+  async function submit() {
     const profile: TempleProfile = {
       ...current,
       name: { en: nameEn.trim(), kn: nameKn.trim() || nameEn.trim() },
@@ -40,7 +40,7 @@ export function AdminProfileScreen() {
       email: email.trim(),
       timings: { morning: morning.trim(), evening: evening.trim(), fridaySpecial: friday.trim() },
     };
-    saveTempleProfile(profile);
+    await saveTempleProfile(profile);
     navigate('/admin/dashboard', { replace: true });
   }
 

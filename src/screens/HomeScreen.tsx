@@ -7,7 +7,7 @@ import {
   dailyInfo,
   getAnnouncements,
   getTempleProfile,
-  myBookings,
+  myDeviceBookings,
   nextMajorEvent,
 } from '../data/mock';
 
@@ -61,7 +61,7 @@ export function HomeScreen() {
   const nextEvent = useMemo(() => nextMajorEvent(today), [today]);
   const nextBooking = useMemo(
     () =>
-      myBookings
+      myDeviceBookings()
         .filter((b) => b.date >= today && b.status === 'confirmed')
         .sort((a, b) => (a.date < b.date ? -1 : 1))[0] ?? null,
     [today],

@@ -20,14 +20,14 @@ export function AdminDonationsScreen() {
   void refresh;
   const total = donations.reduce((s, d) => s + d.amount, 0);
 
-  function submit() {
+  async function submit() {
     const amt = Number(amount);
     if (!amt || amt <= 0) {
       setError(t('donationAmount'));
       return;
     }
     try {
-      createDonation({
+      await createDonation({
         devoteeName: name.trim() || 'Devotee',
         phone: '0000000000',
         amount: amt,

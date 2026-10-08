@@ -38,7 +38,7 @@ export function DonateScreen() {
 
   const finalAmount = amount === '' ? Number(custom) || 0 : amount;
 
-  function submit() {
+  async function submit() {
     if (!finalAmount || finalAmount <= 0) {
       setError(t('donationAmount'));
       return;
@@ -52,7 +52,7 @@ export function DonateScreen() {
       return;
     }
     try {
-      const d: Donation = createDonation({
+      const d: Donation = await createDonation({
         devoteeName: name,
         phone: phone || '0000000000',
         amount: finalAmount,
@@ -209,7 +209,7 @@ export function DonateScreen() {
           <button
             type="button"
             onClick={submit}
-            className="min-h-[56px] w-full rounded-2xl bg-maroon-800 text-lg font-extrabold text-amber-100 shadow"
+            className="min-h-[56px] w-full scroll-mb-28 rounded-2xl bg-maroon-800 text-lg font-extrabold text-amber-100 shadow"
           >
             {t('donateNow')} {finalAmount > 0 ? `· ₹${finalAmount.toLocaleString('en-IN')}` : ''}
           </button>

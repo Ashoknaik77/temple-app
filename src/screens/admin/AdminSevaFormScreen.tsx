@@ -35,7 +35,7 @@ export function AdminSevaFormScreen() {
     );
   }
 
-  function submit() {
+  async function submit() {
     if (!nameEn.trim()) {
       setError(t('nameRequired'));
       return;
@@ -62,7 +62,7 @@ export function AdminSevaFormScreen() {
       slotTimes,
       active: existing?.active ?? true,
     };
-    saveSeva(seva);
+    await saveSeva(seva);
     navigate('/admin/sevas', { replace: true });
   }
 
