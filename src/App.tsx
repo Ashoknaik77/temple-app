@@ -7,7 +7,7 @@ import { PlaceholderScreen } from './screens/PlaceholderScreen';
 export default function App() {
   return (
     <LanguageProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/temple-app">
         <div className="mx-auto min-h-screen max-w-lg bg-[#faf7f2]">
           <Routes>
             <Route path="/" element={<HomeScreen />} />
