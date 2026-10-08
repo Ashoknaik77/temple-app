@@ -19,10 +19,48 @@ import type {
   Booking,
   DailyInfo,
   Donation,
+  Expense,
+  ExpenseCategory,
+  NewExpenseInput,
   Seva,
   TempleEvent,
   TempleProfile,
 } from '../types';
+
+/** Default Indian-temple expense categories (admin-editable). */
+export const defaultExpenseCategories: ExpenseCategory[] = [
+  'Pooja Materials',
+  'Prasadam / Annadaan Ingredients',
+  'Priest Salary / Dakshina',
+  'Staff Salaries',
+  'Electricity Bill',
+  'Water Bill',
+  'Gas / Fuel',
+  'Temple Maintenance & Repairs',
+  'Construction / Renovation',
+  'Cleaning Supplies',
+  'Decoration',
+  'Sound System',
+  'Printing',
+  'Stationery / Office Supplies',
+  'Bank Charges',
+  'Loan Repayment / Interest',
+  'Insurance Premium',
+  'Government Fees / Taxes',
+  'Travel',
+  'Donations Given Out',
+  'Catering / Event Food',
+  'Photography / Videography',
+  'Security Services',
+  'Software / Subscriptions',
+  'Miscellaneous',
+  'Other',
+].map((name, i) => ({
+  id: `cat-${String(i + 1).padStart(2, '0')}`,
+  name,
+  active: true,
+  createdAt: '2026-10-08',
+}));
 
 /* ============================ seed data ============================ */
 
@@ -204,6 +242,8 @@ interface StoreState {
   bookings: Booking[];
   donations: Donation[];
   admins: AdminUser[];
+  expenses: Expense[];
+  expenseCategories: ExpenseCategory[];
   /** booking codes created on this device (devotee-scoped views) */
   myCodes: string[];
   /** receipt numbers created on this device (devotee-scoped views) */
@@ -218,6 +258,8 @@ let backend: Backend = 'local';
 const LOCAL_BOOKINGS_KEY = 'temple-bookings-v1';
 const LOCAL_DONATIONS_KEY = 'temple-donations-v1';
 const LOCAL_ADMINS_KEY = 'temple-admins-v1';
+const LOCAL_EXPENSES_KEY = 'temple-expenses-v1';
+const LOCAL_EXPENSE_CATS_KEY = 'temple-expense-cats-v1';
 const ADMIN_DB_KEY = 'temple-admin-db-v1';
 const MY_CODES_KEY = 'temple-my-codes-v1';
 const MY_RECEIPTS_KEY = 'temple-my-receipts-v1';
@@ -238,6 +280,8 @@ function seedState(): StoreState {
     bookings: deepCopy(myBookings),
     donations: deepCopy(myDonations),
     admins: [],
+    expenses: [],
+    expenseCategories: deepCopy(defaultExpenseCategories),
     myCodes: [...DEFAULT_MY_CODES],
     myReceipts: [...DEFAULT_MY_RECEIPTS],
   };
@@ -278,6 +322,10 @@ function loadLocalState(): StoreState {
     if (Array.isArray(ld)) s.donations = [...s.donations, ...(ld as Donation[])];
     const la = readJSON(LOCAL_ADMINS_KEY);
     if (Array.isArray(la)) s.admins = la as AdminUser[];
+    const le = readJSON(LOCAL_EXPENSES_KEY);
+    if (Array.isArray(le)) s.expenses = le as Expense[];
+    const lc = readJSON(LOCAL_EXPENSE_CATS_KEY);
+    if (Array.isArray(lc) && lc.length > 0) s.expenseCategories = lc as ExpenseCategory[];
     s.myCodes = loadMyList(MY_CODES_KEY, DEFAULT_MY_CODES);
     s.myReceipts = loadMyList(MY_RECEIPTS_KEY, DEFAULT_MY_RECEIPTS);
   } catch {
@@ -327,13 +375,15 @@ async function loadFromFirestore(): Promise<StoreState | null> {
   const { db, collection, doc, getDoc, getDocs } = await fsMod();
   const profSnap = await getDoc(doc(db, 'templeProfile', 'config'));
   if (!profSnap.exists()) return null; // not seeded yet
-  const [sevaSnap, eventSnap, annSnap, bookSnap, donSnap, adminSnap] = await Promise.all([
+  const [sevaSnap, eventSnap, annSnap, bookSnap, donSnap, adminSnap, expSnap, expCatSnap] = await Promise.all([
     getDocs(collection(db, 'sevas')),
     getDocs(collection(db, 'events')),
     getDocs(collection(db, 'announcements')),
     getDocs(collection(db, 'bookings')),
     getDocs(collection(db, 'donations')),
     getDocs(collection(db, 'admins')),
+    getDocs(collection(db, 'expenses')),
+    getDocs(collection(db, 'expenseCategories')),
   ]);
   return {
     profile: profSnap.data() as TempleProfile,
@@ -343,6 +393,11 @@ async function loadFromFirestore(): Promise<StoreState | null> {
     bookings: bookSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Booking),
     donations: donSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Donation),
     admins: adminSnap.docs.map((d) => ({ phone: d.id, ...(d.data() as object) }) as AdminUser),
+    expenses: expSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as Expense),
+    expenseCategories:
+      expCatSnap.docs.length > 0
+        ? expCatSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as ExpenseCategory)
+        : deepCopy(defaultExpenseCategories),
     myCodes: loadMyList(MY_CODES_KEY, DEFAULT_MY_CODES),
     myReceipts: loadMyList(MY_RECEIPTS_KEY, DEFAULT_MY_RECEIPTS),
   };
@@ -690,6 +745,212 @@ export async function saveTempleProfile(profile: TempleProfile): Promise<void> {
   s.profile = profile;
   if (backend === 'firestore') await fsSet('templeProfile', 'config', profile);
   else persistLocal();
+}
+
+/* ---------------- expenses (admin-only) ---------------- */
+
+/** All non-deleted expenses by default, newest first. */
+export function getExpenses(includeDeleted = false): Expense[] {
+  return ensureState()
+    .expenses.filter((e) => includeDeleted || !e.deleted)
+    .sort((a, b) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : a.date < b.date ? 1 : -1));
+}
+
+export function getExpense(id: string): Expense | undefined {
+  return ensureState().expenses.find((e) => e.id === id);
+}
+
+export function getExpenseCategories(includeInactive = false): ExpenseCategory[] {
+  return ensureState()
+    .expenseCategories.filter((c) => includeInactive || c.active)
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function persistExpensesLocal(): void {
+  if (backend === 'firestore') return;
+  try {
+    const s = ensureState();
+    localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(s.expenses));
+    localStorage.setItem(LOCAL_EXPENSE_CATS_KEY, JSON.stringify(s.expenseCategories));
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function saveExpenseCategory(input: {
+  id?: string;
+  name: string;
+  active?: boolean;
+}): Promise<ExpenseCategory> {
+  const name = input.name.trim();
+  if (!name) throw new Error('name required');
+  const s = ensureState();
+  const dup = s.expenseCategories.find(
+    (c) => c.name.toLowerCase() === name.toLowerCase() && c.id !== input.id,
+  );
+  if (dup) throw new Error('category exists');
+  let cat: ExpenseCategory;
+  if (input.id) {
+    const ix = s.expenseCategories.findIndex((c) => c.id === input.id);
+    if (ix < 0) throw new Error('unknown category');
+    cat = { ...s.expenseCategories[ix], name, active: input.active ?? true };
+    // Persist first: a failed write must not leave a phantom category in state.
+    if (backend === 'firestore') await fsSet('expenseCategories', cat.id, cat);
+    s.expenseCategories[ix] = cat;
+  } else {
+    cat = { id: newId('cat'), name, active: true, createdAt: new Date().toISOString().slice(0, 10) };
+    if (backend === 'firestore') await fsSet('expenseCategories', cat.id, cat);
+    s.expenseCategories.push(cat);
+  }
+  persistExpensesLocal();
+  return cat;
+}
+
+export async function deleteExpenseCategory(id: string): Promise<void> {
+  const s = ensureState();
+  // Denormalized categoryName on expenses preserves history; safe to remove.
+  if (backend === 'firestore') await fsDelete('expenseCategories', id);
+  s.expenseCategories = s.expenseCategories.filter((c) => c.id !== id);
+  persistExpensesLocal();
+}
+
+export async function saveExpense(
+  input: NewExpenseInput & { id?: string },
+  adminName?: string,
+): Promise<Expense> {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) throw new Error('invalid amount');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) throw new Error('invalid date');
+  if (!input.paidTo.trim()) throw new Error('paid-to required');
+  const s = ensureState();
+  const cat =
+    s.expenseCategories.find((c) => c.id === input.categoryId) ??
+    s.expenseCategories.find((c) => c.name === 'Other');
+  const isOther = cat?.name.toLowerCase() === 'other';
+  if (isOther && !input.customNote?.trim()) throw new Error('note required for Other');
+  const today = new Date().toISOString().slice(0, 10);
+  let expense: Expense;
+  if (input.id) {
+    const ix = s.expenses.findIndex((e) => e.id === input.id);
+    if (ix < 0) throw new Error('unknown expense');
+    const prev = s.expenses[ix];
+    expense = {
+      ...prev,
+      date: input.date,
+      categoryId: cat?.id ?? prev.categoryId,
+      categoryName: cat?.name ?? prev.categoryName,
+      amount: Math.round(input.amount),
+      paymentMode: input.paymentMode,
+      paidTo: input.paidTo.trim(),
+      vendorPhone: input.vendorPhone?.replace(/\D/g, '').slice(-10) || undefined,
+      invoiceNo: input.invoiceNo?.trim() || undefined,
+      note: input.note?.trim() || undefined,
+      receiptDataUrl: input.receiptDataUrl || undefined,
+      customNote: input.customNote?.trim() || undefined,
+      updatedBy: adminName,
+      updatedAt: today,
+    };
+    // Persist first: a failed write must not leave a phantom expense in state.
+    if (backend === 'firestore') await fsSet('expenses', expense.id, expense);
+    s.expenses[ix] = expense;
+  } else {
+    expense = {
+      id: newId('exp'),
+      date: input.date,
+      categoryId: cat?.id ?? 'cat-26',
+      categoryName: cat?.name ?? 'Other',
+      amount: Math.round(input.amount),
+      paymentMode: input.paymentMode,
+      paidTo: input.paidTo.trim(),
+      vendorPhone: input.vendorPhone?.replace(/\D/g, '').slice(-10) || undefined,
+      invoiceNo: input.invoiceNo?.trim() || undefined,
+      note: input.note?.trim() || undefined,
+      receiptDataUrl: input.receiptDataUrl || undefined,
+      customNote: input.customNote?.trim() || undefined,
+      deleted: false,
+      createdBy: adminName,
+      createdAt: today,
+    };
+    if (backend === 'firestore') await fsSet('expenses', expense.id, expense);
+    s.expenses.push(expense);
+  }
+  persistExpensesLocal();
+  return expense;
+}
+
+/** Soft delete: hidden from default views, kept for audit. */
+export async function softDeleteExpense(id: string, adminName?: string): Promise<void> {
+  const s = ensureState();
+  const ix = s.expenses.findIndex((e) => e.id === id);
+  if (ix < 0) throw new Error('unknown expense');
+  const expense = {
+    ...s.expenses[ix],
+    deleted: true,
+    deletedBy: adminName,
+    deletedAt: new Date().toISOString().slice(0, 10),
+  };
+  if (backend === 'firestore') await fsSet('expenses', id, expense);
+  s.expenses[ix] = expense;
+  persistExpensesLocal();
+}
+
+export async function restoreExpense(id: string, adminName?: string): Promise<void> {
+  const s = ensureState();
+  const ix = s.expenses.findIndex((e) => e.id === id);
+  if (ix < 0) throw new Error('unknown expense');
+  const expense = {
+    ...s.expenses[ix],
+    deleted: false,
+    updatedBy: adminName,
+    updatedAt: new Date().toISOString().slice(0, 10),
+  };
+  if (backend === 'firestore') await fsSet('expenses', id, expense);
+  s.expenses[ix] = expense;
+  persistExpensesLocal();
+}
+
+export interface ExpenseSummary {
+  from: string;
+  to: string;
+  total: number;
+  count: number;
+  avgPerDay: number;
+  days: number;
+  byCategory: { name: string; total: number; count: number }[];
+}
+
+/** Aggregate non-deleted expenses in [from, to] (inclusive, YYYY-MM-DD). */
+export function expenseSummary(from: string, to: string): ExpenseSummary {
+  const list = getExpenses().filter((e) => e.date >= from && e.date <= to);
+  const total = list.reduce((n, e) => n + e.amount, 0);
+  const days = Math.max(
+    1,
+    Math.round((new Date(to).getTime() - new Date(from).getTime()) / 86400000) + 1,
+  );
+  const byCat = new Map<string, { total: number; count: number }>();
+  for (const e of list) {
+    const cur = byCat.get(e.categoryName) ?? { total: 0, count: 0 };
+    cur.total += e.amount;
+    cur.count += 1;
+    byCat.set(e.categoryName, cur);
+  }
+  const byCategory = [...byCat.entries()]
+    .map(([name, v]) => ({ name, ...v }))
+    .sort((a, b) => b.total - a.total);
+  return { from, to, total, count: list.length, avgPerDay: Math.round(total / days), days, byCategory };
+}
+
+/** Quarter (Q1-Q4) date range for a YYYY-MM-DD anchor. */
+export function quarterRange(anchor: string): { start: string; end: string; label: string } {
+  const [y, m] = anchor.split('-').map(Number);
+  const q = Math.floor((m - 1) / 3);
+  const sm = String(q * 3 + 1).padStart(2, '0');
+  const em = String(q * 3 + 3).padStart(2, '0');
+  const lastDay = new Date(y, q * 3 + 3, 0).getDate();
+  return {
+    start: `${y}-${sm}-01`,
+    end: `${y}-${em}-${String(lastDay).padStart(2, '0')}`,
+    label: `Q${q + 1} ${y}`,
+  };
 }
 
 export async function saveSeva(seva: Seva): Promise<void> {

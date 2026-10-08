@@ -139,3 +139,52 @@ export interface Devotee {
   gotra?: string;
   familyMembers: string[];
 }
+
+/* ---------------- temple expenses (admin-only) ---------------- */
+
+export type ExpensePaymentMode = 'Cash' | 'UPI' | 'Bank' | 'Cheque' | 'Card';
+
+export interface ExpenseCategory {
+  id: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface Expense {
+  id: string;
+  date: string; // YYYY-MM-DD
+  categoryId: string;
+  categoryName: string; // denormalized so history survives category edits/deletes
+  amount: number; // ₹, integer
+  paymentMode: ExpensePaymentMode;
+  paidTo: string;
+  vendorPhone?: string;
+  invoiceNo?: string;
+  note?: string;
+  /** downscaled JPEG data URL (free: stored in the doc, no Storage bucket needed) */
+  receiptDataUrl?: string;
+  /** required when the category is "Other" */
+  customNote?: string;
+  deleted: boolean;
+  // audit trail
+  createdBy?: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+  deletedBy?: string;
+  deletedAt?: string;
+}
+
+export interface NewExpenseInput {
+  date: string;
+  categoryId: string;
+  amount: number;
+  paymentMode: ExpensePaymentMode;
+  paidTo: string;
+  vendorPhone?: string;
+  invoiceNo?: string;
+  note?: string;
+  receiptDataUrl?: string;
+  customNote?: string;
+}

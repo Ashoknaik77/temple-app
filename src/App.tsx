@@ -25,6 +25,9 @@ import { AdminDonationsScreen } from './screens/admin/AdminDonationsScreen';
 import { EventsScreen } from './screens/EventsScreen';
 import { TimingsScreen } from './screens/TimingsScreen';
 import { ContactScreen } from './screens/ContactScreen';
+import { AdminExpensesScreen } from './screens/admin/AdminExpensesScreen';
+import { AdminExpenseFormScreen } from './screens/admin/AdminExpenseFormScreen';
+import { AdminExpenseCategoriesScreen } from './screens/admin/AdminExpenseCategoriesScreen';
 import { AdminAnnouncementsScreen } from './screens/admin/AdminAnnouncementsScreen';
 import { AdminUsersScreen } from './screens/admin/AdminUsersScreen';
 import { AdminReportsScreen } from './screens/admin/AdminReportsScreen';
@@ -93,6 +96,10 @@ export default function App() {
               <Route path="/admin/announcements" element={<AdminAnnouncementsScreen />} />
               <Route path="/admin/users" element={<AdminUsersScreen />} />
               <Route path="/admin/reports" element={<AdminReportsScreen />} />
+              <Route path="/admin/expenses" element={<AdminExpensesScreen />} />
+              <Route path="/admin/expenses/new" element={<AdminExpenseFormScreen />} />
+              <Route path="/admin/expenses/categories" element={<AdminExpenseCategoriesScreen />} />
+              <Route path="/admin/expenses/:id" element={<AdminExpenseFormScreen />} />
               <Route path="/admin/profile" element={<AdminProfileScreen />} />
             </Route>
             <Route path="*" element={<PlaceholderScreen titleKey="home" />} />
