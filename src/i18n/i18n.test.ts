@@ -30,9 +30,9 @@ describe('translate', () => {
   });
 
   it('Kannada translations are non-empty where present', () => {
-    for (const [k, v] of Object.entries(kn)) {
+    for (const v of Object.values(kn)) {
       expect(typeof v).toBe('string');
-      expect((v as string).length).toBeGreaterThan(0, `empty kn translation for ${k}`);
+      expect((v as string).length).toBeGreaterThan(0);
     }
   });
 });
