@@ -10,6 +10,17 @@ import { MyBookingsScreen } from './screens/MyBookingsScreen';
 import { DonateScreen } from './screens/DonateScreen';
 import { DonationReceiptScreen } from './screens/DonationReceiptScreen';
 import { DonationHistoryScreen } from './screens/DonationHistoryScreen';
+import { MoreScreen } from './screens/MoreScreen';
+import { AdminGate, RequireAdmin } from './screens/admin/AdminGate';
+import { AdminDashboardScreen } from './screens/admin/AdminDashboardScreen';
+import { AdminSevasScreen } from './screens/admin/AdminSevasScreen';
+import { AdminSevaFormScreen } from './screens/admin/AdminSevaFormScreen';
+import { AdminEventsScreen } from './screens/admin/AdminEventsScreen';
+import { AdminEventFormScreen } from './screens/admin/AdminEventFormScreen';
+import { AdminBookingsScreen } from './screens/admin/AdminBookingsScreen';
+import { AdminDonationsScreen } from './screens/admin/AdminDonationsScreen';
+import { AdminAnnouncementsScreen } from './screens/admin/AdminAnnouncementsScreen';
+import { AdminProfileScreen } from './screens/admin/AdminProfileScreen';
 import { PlaceholderScreen } from './screens/PlaceholderScreen';
 
 export default function App() {
@@ -32,7 +43,21 @@ export default function App() {
             <Route path="/contact" element={<PlaceholderScreen titleKey="contactTemple" />} />
             <Route path="/darshan" element={<PlaceholderScreen titleKey="liveDarshan" />} />
             <Route path="/gallery" element={<PlaceholderScreen titleKey="gallery" />} />
-            <Route path="/more" element={<PlaceholderScreen titleKey="more" />} />
+            <Route path="/more" element={<MoreScreen />} />
+            <Route path="/admin" element={<AdminGate />} />
+            <Route element={<RequireAdmin />}>
+              <Route path="/admin/dashboard" element={<AdminDashboardScreen />} />
+              <Route path="/admin/sevas" element={<AdminSevasScreen />} />
+              <Route path="/admin/sevas/new" element={<AdminSevaFormScreen />} />
+              <Route path="/admin/sevas/:id" element={<AdminSevaFormScreen />} />
+              <Route path="/admin/events" element={<AdminEventsScreen />} />
+              <Route path="/admin/events/new" element={<AdminEventFormScreen />} />
+              <Route path="/admin/events/:id" element={<AdminEventFormScreen />} />
+              <Route path="/admin/bookings" element={<AdminBookingsScreen />} />
+              <Route path="/admin/donations" element={<AdminDonationsScreen />} />
+              <Route path="/admin/announcements" element={<AdminAnnouncementsScreen />} />
+              <Route path="/admin/profile" element={<AdminProfileScreen />} />
+            </Route>
             <Route path="*" element={<PlaceholderScreen titleKey="home" />} />
           </Routes>
           <BottomNav />

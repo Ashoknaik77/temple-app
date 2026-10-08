@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { findDonationByReceipt, templeProfile } from '../data/mock';
+import { findDonationByReceipt, getTempleProfile } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, useLocalText } from '../components/text';
 
@@ -10,6 +10,7 @@ export function DonationReceiptScreen() {
   const loc = useLocalText();
   const { receiptNo } = useParams();
   const donation = receiptNo ? findDonationByReceipt(receiptNo) : null;
+  const templeProfile = getTempleProfile();
 
   if (!donation) {
     return (

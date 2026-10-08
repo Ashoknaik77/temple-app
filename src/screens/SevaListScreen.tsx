@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { sevas } from '../data/mock';
+import { getSevas } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useLocalText } from '../components/text';
 
@@ -8,6 +8,7 @@ import { useLocalText } from '../components/text';
 export function SevaListScreen() {
   const { t } = useLang();
   const loc = useLocalText();
+  const sevas = getSevas();
 
   return (
     <div className="pb-24">

@@ -4,11 +4,11 @@ import { useLang } from '../i18n';
 import { LangToggle } from '../components/LangToggle';
 import type { Localized } from '../types';
 import {
-  announcements,
   dailyInfo,
+  getAnnouncements,
+  getTempleProfile,
   myBookings,
   nextMajorEvent,
-  templeProfile,
 } from '../data/mock';
 
 function todayStr(): string {
@@ -55,6 +55,8 @@ export function HomeScreen() {
   const loc = useLocal();
   const navigate = useNavigate();
   const today = todayStr();
+  const templeProfile = getTempleProfile();
+  const announcements = getAnnouncements();
 
   const nextEvent = useMemo(() => nextMajorEvent(today), [today]);
   const nextBooking = useMemo(

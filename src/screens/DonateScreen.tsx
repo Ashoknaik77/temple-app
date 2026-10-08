@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { createDonation, templeProfile } from '../data/mock';
+import { createDonation, getTempleProfile } from '../data/mock';
 import type { Donation, DonationPurpose } from '../types';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useLocalText } from '../components/text';
@@ -25,6 +25,7 @@ export function DonateScreen() {
   const [anonymous, setAnonymous] = useState(false);
   const [mode, setMode] = useState<'online' | 'offline'>('online');
   const [error, setError] = useState('');
+  const templeProfile = getTempleProfile();
 
   const purposes: { value: DonationPurpose; label: string }[] = [
     { value: 'Annadaan', label: t('purposeAnnadaan') },

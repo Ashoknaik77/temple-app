@@ -127,6 +127,16 @@ export const en = {
   purposeVidyaDaan: 'Vidya Daan',
   purposeGeneral: 'General',
   purposeOther: 'Other',
+  adminLogin: 'Admin Login',
+  enterAdminPin: 'Enter admin PIN',
+  incorrectPin: 'Incorrect PIN. Try again.',
+  addNew: 'Add new',
+  markDone: 'Mark done',
+  activate: 'Activate',
+  deactivate: 'Deactivate',
+  recordOfflineDonation: 'Record offline donation',
+  post: 'Post',
+  adminNote: 'Demo PIN is 1234. Real login comes with the backend.',
 } as const;
 
 export type EnKeys = keyof typeof en;

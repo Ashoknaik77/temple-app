@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { seatsLeft, sevas } from '../data/mock';
+import { getSevas, seatsLeft } from '../data/mock';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, toISODate, useLocalText } from '../components/text';
 
@@ -13,7 +13,7 @@ export function SevaDetailScreen() {
   const loc = useLocalText();
   const navigate = useNavigate();
   const { sevaId } = useParams();
-  const seva = sevas.find((s) => s.id === sevaId);
+  const seva = getSevas().find((s) => s.id === sevaId);
 
   const days = useMemo(() => {
     const out: string[] = [];

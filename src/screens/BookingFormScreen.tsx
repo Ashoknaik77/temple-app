@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLang } from '../i18n';
-import { createBooking, sevas } from '../data/mock';
+import { createBooking, getSevas } from '../data/mock';
 import type { PayMode } from '../types';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { fmtDate, fmtTime, useLocalText } from '../components/text';
@@ -18,7 +18,7 @@ export function BookingFormScreen() {
   const [params] = useSearchParams();
   const date = params.get('date') ?? '';
   const time = params.get('time') ?? '';
-  const seva = sevas.find((s) => s.id === sevaId);
+  const seva = getSevas().find((s) => s.id === sevaId);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');

@@ -177,7 +177,7 @@ export const myDonations: Donation[] = [
 
 /** Next major event for the home-screen countdown. */
 export function nextMajorEvent(fromDate: string): TempleEvent | null {
-  const upcoming = events
+  const upcoming = getEvents()
     .filter((e) => e.date >= fromDate)
     .sort((a, b) => (a.date < b.date ? -1 : 1));
   return upcoming[0] ?? null;
@@ -217,7 +217,7 @@ export function allBookings(): Booking[] {
 
 /** Deterministic demo availability for a slot, plus the devotee's own bookings. */
 export function getSlotBooked(sevaId: string, date: string, time: string): number {
-  const seva = sevas.find((s) => s.id === sevaId);
+  const seva = getSevas().find((s) => s.id === sevaId);
   if (!seva) return 0;
   const demo = hashStr(`${sevaId}|${date}|${time}`) % Math.max(1, Math.ceil(seva.capacity / 2));
   const mine = loadLocalBookings().filter(
@@ -227,7 +227,7 @@ export function getSlotBooked(sevaId: string, date: string, time: string): numbe
 }
 
 export function seatsLeft(sevaId: string, date: string, time: string): number {
-  const seva = sevas.find((s) => s.id === sevaId);
+  const seva = getSevas().find((s) => s.id === sevaId);
   if (!seva) return 0;
   return Math.max(0, seva.capacity - getSlotBooked(sevaId, date, time));
 }
@@ -245,7 +245,7 @@ export interface NewBookingInput {
 }
 
 export function createBooking(input: NewBookingInput): Booking {
-  const seva = sevas.find((s) => s.id === input.sevaId);
+  const seva = getSevas().find((s) => s.id === input.sevaId);
   if (!seva) throw new Error(`unknown seva ${input.sevaId}`);
   if (seatsLeft(input.sevaId, input.date, input.time) < 1) {
     throw new Error('slot full');
@@ -355,4 +355,161 @@ export function createDonation(input: NewDonationInput): Donation {
 
 export function findDonationByReceipt(receiptNo: string): Donation | null {
   return allDonations().find((d) => d.receiptNo === receiptNo) ?? null;
+}
+
+/* ---------------- Admin store (localStorage-backed, seeded from mock) ---------------- */
+
+export const ADMIN_PIN = '1234'; // demo-grade gate; replaced by real auth with backend
+const ADMIN_DB_KEY = 'temple-admin-db-v1';
+const ADMIN_AUTH_KEY = 'temple-admin-auth';
+
+interface AdminDB {
+  profile: TempleProfile;
+  sevas: Seva[];
+  events: TempleEvent[];
+  announcements: Announcement[];
+}
+
+function seedAdminDB(): AdminDB {
+  return {
+    profile: JSON.parse(JSON.stringify(templeProfile)),
+    sevas: JSON.parse(JSON.stringify(sevas)),
+    events: JSON.parse(JSON.stringify(events)),
+    announcements: JSON.parse(JSON.stringify(announcements)),
+  };
+}
+
+function loadAdminDB(): AdminDB {
+  try {
+    const raw = localStorage.getItem(ADMIN_DB_KEY);
+    if (raw) {
+      const db = JSON.parse(raw) as AdminDB;
+      if (db && db.profile && Array.isArray(db.sevas)) return db;
+    }
+  } catch {
+    /* fall through to seed */
+  }
+  const db = seedAdminDB();
+  try {
+    localStorage.setItem(ADMIN_DB_KEY, JSON.stringify(db));
+  } catch {
+    /* storage unavailable */
+  }
+  return db;
+}
+
+function saveAdminDB(db: AdminDB): void {
+  localStorage.setItem(ADMIN_DB_KEY, JSON.stringify(db));
+}
+
+export function isAdminAuthed(): boolean {
+  try {
+    return sessionStorage.getItem(ADMIN_AUTH_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function adminLogin(pin: string): boolean {
+  const ok = pin === ADMIN_PIN;
+  try {
+    if (ok) sessionStorage.setItem(ADMIN_AUTH_KEY, '1');
+    else sessionStorage.removeItem(ADMIN_AUTH_KEY);
+  } catch {
+    /* ignore */
+  }
+  return ok;
+}
+
+export function adminLogout(): void {
+  try {
+    sessionStorage.removeItem(ADMIN_AUTH_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Devotee screens should read these so admin edits show up immediately. */
+export function getTempleProfile(): TempleProfile {
+  return loadAdminDB().profile;
+}
+export function saveTempleProfile(profile: TempleProfile): void {
+  const db = loadAdminDB();
+  db.profile = profile;
+  saveAdminDB(db);
+}
+export function getSevas(): Seva[] {
+  return loadAdminDB().sevas;
+}
+export function saveSeva(seva: Seva): void {
+  const db = loadAdminDB();
+  const ix = db.sevas.findIndex((s) => s.id === seva.id);
+  if (ix >= 0) db.sevas[ix] = seva;
+  else db.sevas.push(seva);
+  saveAdminDB(db);
+}
+export function getEvents(): TempleEvent[] {
+  return loadAdminDB().events;
+}
+export function saveEvent(event: TempleEvent): void {
+  const db = loadAdminDB();
+  const ix = db.events.findIndex((e) => e.id === event.id);
+  if (ix >= 0) db.events[ix] = event;
+  else db.events.push(event);
+  saveAdminDB(db);
+}
+export function deleteEvent(id: string): void {
+  const db = loadAdminDB();
+  db.events = db.events.filter((e) => e.id !== id);
+  saveAdminDB(db);
+}
+export function getAnnouncements(): Announcement[] {
+  return loadAdminDB().announcements;
+}
+export function addAnnouncement(a: Announcement): void {
+  const db = loadAdminDB();
+  db.announcements.unshift(a);
+  saveAdminDB(db);
+}
+
+export function completeBooking(id: string): boolean {
+  const sample = myBookings.find((b) => b.id === id);
+  if (sample) {
+    sample.status = 'completed';
+    return true;
+  }
+  try {
+    const list = loadLocalBookings();
+    const ix = list.findIndex((b) => b.id === id);
+    if (ix < 0) return false;
+    list[ix] = { ...list[ix], status: 'completed' };
+    localStorage.setItem(LOCAL_BOOKINGS_KEY, JSON.stringify(list));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Dashboard stats for the admin home. */
+export function adminStats(today: string): {
+  donationsToday: number;
+  bookingsToday: number;
+  pendingCount: number;
+  activeSevas: number;
+  upcomingEvents: number;
+} {
+  const donationsToday = allDonations()
+    .filter((d) => d.createdAt === today)
+    .reduce((s, d) => s + d.amount, 0);
+  const todaysBookings = allBookings().filter((b) => b.date === today && b.status === 'confirmed');
+  const pendingCount = allBookings().filter(
+    (b) => b.status === 'confirmed' && b.payMode === 'payAtTemple' && b.date >= today,
+  ).length;
+  return {
+    donationsToday,
+    bookingsToday: todaysBookings.length,
+    pendingCount,
+    activeSevas: getSevas().filter((s) => s.active).length,
+    upcomingEvents: getEvents().filter((e) => e.date >= today).length,
+  };
 }
