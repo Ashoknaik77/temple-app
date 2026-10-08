@@ -48,6 +48,7 @@ export function AdminDashboardScreen() {
     { to: '/admin/profile', icon: '🛕', label: t('editTempleProfile') },
     { to: '/admin/reports', icon: '📊', label: t('reports') },
     { to: '/admin/expenses', icon: '🧮', label: t('expenses') },
+    { to: '/admin/gallery', icon: '🖼️', label: t('manageGallery') },
     ...(isSuperAdmin()
       ? [{ to: '/admin/users', icon: '👥', label: t('adminUsers') }]
       : []),

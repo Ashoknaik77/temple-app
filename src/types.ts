@@ -188,3 +188,12 @@ export interface NewExpenseInput {
   receiptDataUrl?: string;
   customNote?: string;
 }
+
+/** Admin-uploaded gallery photo — collection `galleryPhotos/{id}` (data URL, downscaled). */
+export interface GalleryPhoto {
+  id: string;
+  dataUrl: string;
+  caption?: string;
+  uploadedBy?: string;
+  uploadedAt: string;
+}

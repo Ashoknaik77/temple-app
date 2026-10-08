@@ -21,6 +21,7 @@ import type {
   Donation,
   Expense,
   ExpenseCategory,
+  GalleryPhoto,
   NewExpenseInput,
   Seva,
   TempleEvent,
@@ -244,6 +245,7 @@ interface StoreState {
   admins: AdminUser[];
   expenses: Expense[];
   expenseCategories: ExpenseCategory[];
+  galleryPhotos: GalleryPhoto[];
   /** booking codes created on this device (devotee-scoped views) */
   myCodes: string[];
   /** receipt numbers created on this device (devotee-scoped views) */
@@ -260,6 +262,7 @@ const LOCAL_DONATIONS_KEY = 'temple-donations-v1';
 const LOCAL_ADMINS_KEY = 'temple-admins-v1';
 const LOCAL_EXPENSES_KEY = 'temple-expenses-v1';
 const LOCAL_EXPENSE_CATS_KEY = 'temple-expense-cats-v1';
+const LOCAL_GALLERY_KEY = 'temple-gallery-v1';
 const ADMIN_DB_KEY = 'temple-admin-db-v1';
 const MY_CODES_KEY = 'temple-my-codes-v1';
 const MY_RECEIPTS_KEY = 'temple-my-receipts-v1';
@@ -281,6 +284,7 @@ function seedState(): StoreState {
     donations: deepCopy(myDonations),
     admins: [],
     expenses: [],
+    galleryPhotos: [],
     expenseCategories: deepCopy(defaultExpenseCategories),
     myCodes: [...DEFAULT_MY_CODES],
     myReceipts: [...DEFAULT_MY_RECEIPTS],
@@ -326,6 +330,8 @@ function loadLocalState(): StoreState {
     if (Array.isArray(le)) s.expenses = le as Expense[];
     const lc = readJSON(LOCAL_EXPENSE_CATS_KEY);
     if (Array.isArray(lc) && lc.length > 0) s.expenseCategories = lc as ExpenseCategory[];
+    const lg = readJSON(LOCAL_GALLERY_KEY);
+    if (Array.isArray(lg)) s.galleryPhotos = lg as GalleryPhoto[];
     s.myCodes = loadMyList(MY_CODES_KEY, DEFAULT_MY_CODES);
     s.myReceipts = loadMyList(MY_RECEIPTS_KEY, DEFAULT_MY_RECEIPTS);
   } catch {
@@ -355,6 +361,7 @@ function persistLocal(): void {
       JSON.stringify(state.donations.filter((d) => !SEED_DONATION_IDS.has(d.id))),
     );
     localStorage.setItem(LOCAL_ADMINS_KEY, JSON.stringify(state.admins));
+    localStorage.setItem(LOCAL_GALLERY_KEY, JSON.stringify(state.galleryPhotos));
     localStorage.setItem(MY_CODES_KEY, JSON.stringify(state.myCodes));
     localStorage.setItem(MY_RECEIPTS_KEY, JSON.stringify(state.myReceipts));
   } catch {
@@ -375,7 +382,7 @@ async function loadFromFirestore(): Promise<StoreState | null> {
   const { db, collection, doc, getDoc, getDocs } = await fsMod();
   const profSnap = await getDoc(doc(db, 'templeProfile', 'config'));
   if (!profSnap.exists()) return null; // not seeded yet
-  const [sevaSnap, eventSnap, annSnap, bookSnap, donSnap, adminSnap, expSnap, expCatSnap] = await Promise.all([
+  const [sevaSnap, eventSnap, annSnap, bookSnap, donSnap, adminSnap, expSnap, expCatSnap, galSnap] = await Promise.all([
     getDocs(collection(db, 'sevas')),
     getDocs(collection(db, 'events')),
     getDocs(collection(db, 'announcements')),
@@ -384,6 +391,7 @@ async function loadFromFirestore(): Promise<StoreState | null> {
     getDocs(collection(db, 'admins')),
     getDocs(collection(db, 'expenses')),
     getDocs(collection(db, 'expenseCategories')),
+    getDocs(collection(db, 'galleryPhotos')),
   ]);
   return {
     profile: profSnap.data() as TempleProfile,
@@ -398,6 +406,7 @@ async function loadFromFirestore(): Promise<StoreState | null> {
       expCatSnap.docs.length > 0
         ? expCatSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as ExpenseCategory)
         : deepCopy(defaultExpenseCategories),
+    galleryPhotos: galSnap.docs.map((d) => ({ id: d.id, ...(d.data() as object) }) as GalleryPhoto),
     myCodes: loadMyList(MY_CODES_KEY, DEFAULT_MY_CODES),
     myReceipts: loadMyList(MY_RECEIPTS_KEY, DEFAULT_MY_RECEIPTS),
   };
@@ -1283,4 +1292,43 @@ export function adminStats(today: string): {
     activeSevas: s.sevas.filter((x) => x.active).length,
     upcomingEvents: s.events.filter((e) => e.date >= today).length,
   };
+}
+
+/* ---------------- gallery photos (admin-managed) ---------------- */
+
+/** All gallery photos, newest first. */
+export function getGalleryPhotos(): GalleryPhoto[] {
+  return [...ensureState().galleryPhotos].sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
+}
+
+/**
+ * Save an admin-uploaded gallery photo. The data URL must already be
+ * downscaled (client-side) so the Firestore doc stays well under 1 MiB.
+ */
+export async function saveGalleryPhoto(
+  input: { dataUrl: string; caption?: string },
+  adminName?: string,
+): Promise<GalleryPhoto> {
+  if (!input.dataUrl.startsWith('data:image/')) throw new Error('invalid photo');
+  // ~700 KB cap keeps the doc safely under Firestore's 1 MiB limit.
+  if (input.dataUrl.length > 700_000) throw new Error('photo too large');
+  const s = ensureState();
+  const photo: GalleryPhoto = {
+    id: `gal-${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`,
+    dataUrl: input.dataUrl,
+    caption: input.caption?.trim() || undefined,
+    uploadedBy: adminName,
+    uploadedAt: new Date().toISOString(),
+  };
+  if (backend === 'firestore') await fsSet('galleryPhotos', photo.id, photo);
+  s.galleryPhotos.push(photo);
+  if (backend !== 'firestore') persistLocal();
+  return photo;
+}
+
+export async function deleteGalleryPhoto(id: string): Promise<void> {
+  const s = ensureState();
+  if (backend === 'firestore') await fsDelete('galleryPhotos', id);
+  s.galleryPhotos = s.galleryPhotos.filter((p) => p.id !== id);
+  if (backend !== 'firestore') persistLocal();
 }

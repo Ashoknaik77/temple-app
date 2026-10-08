@@ -25,9 +25,11 @@ import { AdminDonationsScreen } from './screens/admin/AdminDonationsScreen';
 import { EventsScreen } from './screens/EventsScreen';
 import { TimingsScreen } from './screens/TimingsScreen';
 import { ContactScreen } from './screens/ContactScreen';
+import { GalleryScreen } from './screens/GalleryScreen';
 import { AdminExpensesScreen } from './screens/admin/AdminExpensesScreen';
 import { AdminExpenseFormScreen } from './screens/admin/AdminExpenseFormScreen';
 import { AdminExpenseCategoriesScreen } from './screens/admin/AdminExpenseCategoriesScreen';
+import { AdminGalleryScreen } from './screens/admin/AdminGalleryScreen';
 import { AdminAnnouncementsScreen } from './screens/admin/AdminAnnouncementsScreen';
 import { AdminUsersScreen } from './screens/admin/AdminUsersScreen';
 import { AdminReportsScreen } from './screens/admin/AdminReportsScreen';
@@ -79,7 +81,7 @@ export default function App() {
             <Route path="/timings" element={<TimingsScreen />} />
             <Route path="/contact" element={<ContactScreen />} />
             <Route path="/darshan" element={<PlaceholderScreen titleKey="liveDarshan" />} />
-            <Route path="/gallery" element={<PlaceholderScreen titleKey="gallery" />} />
+            <Route path="/gallery" element={<GalleryScreen />} />
             <Route path="/more" element={<MoreScreen />} />
             <Route path="/admin" element={<AdminGate />} />
             <Route element={<RequireAdmin />}>
@@ -100,6 +102,7 @@ export default function App() {
               <Route path="/admin/expenses/new" element={<AdminExpenseFormScreen />} />
               <Route path="/admin/expenses/categories" element={<AdminExpenseCategoriesScreen />} />
               <Route path="/admin/expenses/:id" element={<AdminExpenseFormScreen />} />
+              <Route path="/admin/gallery" element={<AdminGalleryScreen />} />
               <Route path="/admin/profile" element={<AdminProfileScreen />} />
             </Route>
             <Route path="*" element={<PlaceholderScreen titleKey="home" />} />

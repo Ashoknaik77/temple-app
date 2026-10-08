@@ -6,6 +6,7 @@ import type { Localized } from '../types';
 import {
   dailyInfo,
   getAnnouncements,
+  getGalleryPhotos,
   getTempleProfile,
   myDeviceBookings,
   nextMajorEvent,
@@ -213,23 +214,29 @@ export function HomeScreen() {
             <h2 className="text-base font-bold text-stone-800">📸 {t('gallery')}</h2>
             <Link to="/gallery" className="text-sm font-bold text-amber-700">{t('viewAll')}</Link>
           </div>
-          {templeProfile.galleryUrls.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto">
-              {templeProfile.galleryUrls.slice(0, 6).map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt=""
-                  className="h-24 w-24 shrink-0 rounded-xl object-cover"
-                  loading="lazy"
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="rounded-2xl bg-white p-4 text-center text-sm text-stone-400 shadow-sm">
-              🛕 {loc(templeProfile.name)}
-            </p>
-          )}
+          {(() => {
+            const preview = [
+              ...getGalleryPhotos().map((p) => p.dataUrl),
+              ...templeProfile.galleryUrls,
+            ].slice(0, 6);
+            return preview.length > 0 ? (
+              <div className="flex gap-2 overflow-x-auto">
+                {preview.map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="h-24 w-24 shrink-0 rounded-xl object-cover"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-2xl bg-white p-4 text-center text-sm text-stone-400 shadow-sm">
+                🛕 {loc(templeProfile.name)}
+              </p>
+            );
+          })()}
         </div>
       </div>
     </div>
